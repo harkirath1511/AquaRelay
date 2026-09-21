@@ -5,6 +5,15 @@ interface GeminiResponse {
   candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
 }
 
+const evidenceTextJsonSchema = {
+  type: "object",
+  required: ["text", "evidenceReferences"],
+  properties: {
+    text: { type: "string" },
+    evidenceReferences: { type: "array", items: { type: "string", format: "uuid" } },
+  },
+};
+
 const responseJsonSchema = {
   type: "object",
   required: [
@@ -18,11 +27,11 @@ const responseJsonSchema = {
     "summary",
   ],
   properties: {
-    observedFeatures: { type: "array", items: { $ref: "#/definitions/evidenceText" } },
-    qualityIssues: { type: "array", items: { $ref: "#/definitions/evidenceText" } },
+    observedFeatures: { type: "array", items: evidenceTextJsonSchema },
+    qualityIssues: { type: "array", items: evidenceTextJsonSchema },
     missingEvidence: { type: "array", items: { type: "string" } },
-    possibleExplanations: { type: "array", items: { $ref: "#/definitions/evidenceText" } },
-    contradictions: { type: "array", items: { $ref: "#/definitions/evidenceText" } },
+    possibleExplanations: { type: "array", items: evidenceTextJsonSchema },
+    contradictions: { type: "array", items: evidenceTextJsonSchema },
     suggestedMissionTypes: {
       type: "array",
       items: {
@@ -52,17 +61,7 @@ const responseJsonSchema = {
         ],
       },
     },
-    summary: { $ref: "#/definitions/evidenceText" },
-  },
-  definitions: {
-    evidenceText: {
-      type: "object",
-      required: ["text", "evidenceReferences"],
-      properties: {
-        text: { type: "string" },
-        evidenceReferences: { type: "array", items: { type: "string", format: "uuid" } },
-      },
-    },
+    summary: evidenceTextJsonSchema,
   },
 };
 
@@ -75,6 +74,18 @@ export class GeminiAssessmentProvider implements AssessmentProvider {
   ) {}
 
   async assess(evidence: AssessmentEvidence) {
+    const textEvidence = {
+      ...evidence,
+      observations: evidence.observations.map(({ media, ...observation }) => ({
+        ...observation,
+        media: media.map(({ id, mimeType }) => ({ id, mimeType })),
+      })),
+    };
+    const imageParts = evidence.observations.flatMap((observation) =>
+      observation.media.map((media) => ({
+        inlineData: { mimeType: media.mimeType, data: media.data },
+      })),
+    );
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(this.modelName)}:generateContent`,
       {
@@ -94,7 +105,12 @@ export class GeminiAssessmentProvider implements AssessmentProvider {
               },
             ],
           },
-          contents: [{ role: "user", parts: [{ text: JSON.stringify(evidence) }] }],
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: JSON.stringify(textEvidence) }, ...imageParts],
+            },
+          ],
           generationConfig: {
             temperature: 0.1,
             responseMimeType: "application/json",

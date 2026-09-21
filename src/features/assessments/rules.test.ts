@@ -19,6 +19,7 @@ const baseEvidence: AssessmentEvidence = {
       safetyFlags: [],
       isPotentialDuplicate: false,
       invalidatedAt: null,
+      media: [],
     },
   ],
 };

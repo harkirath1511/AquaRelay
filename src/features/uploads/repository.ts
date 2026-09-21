@@ -128,19 +128,22 @@ export class UploadRepository {
         .eq("id", mediaId);
       if (updateError) throw new Error(`Media finalization failed: ${updateError.message}`);
 
-      if ((duplicateCount ?? 0) > 0) {
-        const { error: observationError } = await this.admin
-          .from("observations")
-          .update({ is_potential_duplicate: true })
-          .eq("id", media.observation_id);
-        if (observationError) throw new Error(`Duplicate flag failed: ${observationError.message}`);
-      }
+      const { data: revision, error: revisionError } = await this.admin.rpc(
+        "finalize_observation_media",
+        {
+          p_observation_id: media.observation_id,
+          p_media_id: mediaId,
+          p_is_duplicate: (duplicateCount ?? 0) > 0,
+        },
+      );
+      if (revisionError) throw new Error(`Evidence revision update failed: ${revisionError.message}`);
 
       return {
         mediaId,
         state: "ready",
         replayed: false,
         potentialDuplicate: (duplicateCount ?? 0) > 0,
+        evidenceRevision: revision,
       };
     } catch (error) {
       await this.admin.from("media").update({ processing_state: "rejected" }).eq("id", mediaId);

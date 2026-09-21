@@ -35,6 +35,11 @@ export interface AssessmentEvidence {
     safetyFlags: string[];
     isPotentialDuplicate: boolean;
     invalidatedAt: string | null;
+    media: Array<{
+      id: string;
+      mimeType: "image/jpeg";
+      data: string;
+    }>;
   }>;
 }
 
