@@ -11,6 +11,15 @@ export class AuthenticationError extends Error {
   }
 }
 
+export class AuthorizationError extends Error {
+  readonly status = 403;
+
+  constructor(message = "You do not have permission to perform this action") {
+    super(message);
+    this.name = "AuthorizationError";
+  }
+}
+
 export async function requireUser(): Promise<User> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.auth.getUser();
@@ -20,4 +29,20 @@ export async function requireUser(): Promise<User> {
   }
 
   return data.user;
+}
+
+export async function requireReviewer(): Promise<User> {
+  const user = await requireUser();
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (error || !data || !["reviewer", "admin"].includes(data.role)) {
+    throw new AuthorizationError("Reviewer access is required");
+  }
+
+  return user;
 }

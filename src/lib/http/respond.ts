@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
-import { AuthenticationError } from "@/lib/auth/require-user";
+import { AuthenticationError, AuthorizationError } from "@/lib/auth/require-user";
 import { AssessmentConflictError } from "@/features/assessments/repository";
 import { UploadLimitError } from "@/features/uploads/repository";
 
 export function errorResponse(error: unknown) {
   if (error instanceof AuthenticationError) {
     return NextResponse.json({ error: { code: "unauthorized", message: error.message } }, { status: 401 });
+  }
+
+  if (error instanceof AuthorizationError) {
+    return NextResponse.json({ error: { code: "forbidden", message: error.message } }, { status: 403 });
   }
 
   if (error instanceof AssessmentConflictError) {

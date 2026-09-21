@@ -18,7 +18,7 @@ returns table (
   replayed boolean
 )
 language plpgsql
-security invoker
+security definer
 set search_path = ''
 as $$
 declare
