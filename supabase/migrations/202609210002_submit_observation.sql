@@ -25,7 +25,7 @@ declare
   v_incident_id uuid;
   v_observation_id uuid;
   v_created_incident boolean := false;
-  v_point geography(point, 4326);
+  v_point public.geography(point, 4326);
   v_serious_safety boolean;
 begin
   if auth.uid() is null or auth.uid() <> p_user_id then
@@ -51,7 +51,7 @@ begin
     return;
   end if;
 
-  v_point := st_setsrid(st_makepoint(p_longitude, p_latitude), 4326)::geography;
+  v_point := public.st_setsrid(public.st_makepoint(p_longitude, p_latitude), 4326)::public.geography;
   v_serious_safety := coalesce(p_safety_flags, '{}') && array[
     'strong_fumes', 'chemical_containers', 'mass_wildlife_death',
     'flooding', 'rapidly_changing_water'
@@ -64,7 +64,7 @@ begin
      and i.resolved_at is null
      and i.opened_at >= now() - interval '24 hours'
      and (p_stream_id is null or i.stream_id = p_stream_id)
-     and st_dwithin(i.location, v_point, 250)
+     and public.st_dwithin(i.location, v_point, 250)
    order by i.location <-> v_point
    limit 1;
 

@@ -78,8 +78,8 @@ as $$
     m.evidence_gap,
     m.instructions,
     m.safety_message,
-    st_y(coalesce(m.target_location, i.location)::geometry),
-    st_x(coalesce(m.target_location, i.location)::geometry),
+    public.st_y(coalesce(m.target_location, i.location)::public.geometry),
+    public.st_x(coalesce(m.target_location, i.location)::public.geometry),
     m.available_from,
     m.due_at
   from public.missions m
@@ -91,9 +91,9 @@ as $$
     and (p_type is null or m.type = p_type)
     and (
       p_latitude is null or p_longitude is null or
-      st_dwithin(
+      public.st_dwithin(
         coalesce(m.target_location, i.location),
-        st_setsrid(st_makepoint(p_longitude, p_latitude), 4326)::geography,
+        public.st_setsrid(public.st_makepoint(p_longitude, p_latitude), 4326)::public.geography,
         least(greatest(p_radius_meters, 100), 20000)
       )
     )
@@ -136,7 +136,7 @@ declare
   v_observation_id uuid;
   v_revision integer;
   v_points integer := 0;
-  v_point geography(point, 4326);
+  v_point public.geography(point, 4326);
   v_serious_safety boolean;
 begin
   if auth.uid() is null or auth.uid() <> p_user_id then
@@ -166,7 +166,7 @@ begin
   if v_mission.state <> 'open' then raise exception 'Mission is no longer open'; end if;
   if v_incident.safety_state = 'missions_paused' then raise exception 'Community missions are paused'; end if;
 
-  v_point := st_setsrid(st_makepoint(p_longitude, p_latitude), 4326)::geography;
+  v_point := public.st_setsrid(public.st_makepoint(p_longitude, p_latitude), 4326)::public.geography;
   v_serious_safety := coalesce(p_safety_flags, '{}') && array[
     'strong_fumes', 'chemical_containers', 'mass_wildlife_death',
     'flooding', 'rapidly_changing_water'
