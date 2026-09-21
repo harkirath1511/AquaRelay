@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 
 import { AuthenticationError } from "@/lib/auth/require-user";
 import { AssessmentConflictError } from "@/features/assessments/repository";
+import { UploadLimitError } from "@/features/uploads/repository";
 
 export function errorResponse(error: unknown) {
   if (error instanceof AuthenticationError) {
@@ -11,6 +12,10 @@ export function errorResponse(error: unknown) {
 
   if (error instanceof AssessmentConflictError) {
     return NextResponse.json({ error: { code: "assessment_conflict", message: error.message } }, { status: 409 });
+  }
+
+  if (error instanceof UploadLimitError) {
+    return NextResponse.json({ error: { code: "upload_limit", message: error.message } }, { status: 409 });
   }
 
   if (error instanceof ZodError) {
