@@ -5,7 +5,7 @@ import { ObservationService } from "./service";
 
 const validInput = {
   category: "foam",
-  location: { latitude: 51.5, longitude: -0.1 },
+  location: { latitude: 51.5, longitude: -0.1, source: "device", accuracyMeters: 12 },
   observedAt: "2026-09-21T10:00:00+00:00",
   description: "Persistent white foam near the footbridge",
 };

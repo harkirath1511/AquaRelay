@@ -1,6 +1,7 @@
+import { reportedLocationSchema, observationAnswersSchema, redactLocationText } from "@/features/locations/contracts";
 import { z } from "zod";
 
-import { coordinatesSchema, missionTypeSchema } from "@/domain/model";
+import { missionTypeSchema } from "@/domain/model";
 import { safetyFlagSchema } from "@/features/observations/contracts";
 
 export const missionListQuerySchema = z
@@ -17,10 +18,10 @@ export const missionListQuerySchema = z
   );
 
 export const submitMissionResponseSchema = z.object({
-  location: coordinatesSchema,
+  location: reportedLocationSchema,
   observedAt: z.iso.datetime({ offset: true }),
-  description: z.string().trim().min(1).max(2_000),
-  answers: z.record(z.string(), z.unknown()).default({}),
+  description: z.string().trim().min(1).max(2_000).transform(redactLocationText),
+  answers: observationAnswersSchema,
   safetyFlags: z.array(safetyFlagSchema).max(6).default([]),
 });
 
@@ -32,5 +33,6 @@ export interface MissionResponseResult {
   observationId: string;
   evidenceRevision: number;
   impactPoints: number;
+  locationQualityFlag: "far_from_target" | "target_unknown" | null;
   replayed: boolean;
 }

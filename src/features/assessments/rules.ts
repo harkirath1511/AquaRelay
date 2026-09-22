@@ -21,14 +21,14 @@ export function evaluateEvidence(
   assessment: AssessmentResult,
 ): EvidenceDecision {
   const usable = evidence.observations.filter(
-    (observation) => !observation.isPotentialDuplicate && !observation.invalidatedAt,
+    (observation) => !observation.isPotentialDuplicate && !observation.invalidatedAt && !observation.locationQualityFlag,
   );
   const contributorCount = new Set(usable.map((observation) => observation.authorId)).size;
   const missionTypes = new Set(usable.map((observation) => observation.missionType));
   const hasSpatialComparison =
     missionTypes.has("upstream_comparison") || missionTypes.has("downstream_comparison");
   const hasPersistence = missionTypes.has("repeat_observation");
-  const hasSeriousSafetyFlag = [...assessment.safetyFlags, ...usable.flatMap((o) => o.safetyFlags)]
+  const hasSeriousSafetyFlag = [...assessment.safetyFlags, ...evidence.observations.flatMap((o) => o.safetyFlags)]
     .some((flag) => seriousSafetyFlags.has(flag));
 
   if (hasSeriousSafetyFlag) {

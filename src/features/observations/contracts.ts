@@ -1,6 +1,7 @@
+import { reportedLocationSchema, observationAnswersSchema, redactLocationText } from "@/features/locations/contracts";
 import { z } from "zod";
 
-import { coordinatesSchema, incidentCategorySchema } from "@/domain/model";
+import { incidentCategorySchema } from "@/domain/model";
 
 export const safetyFlagSchema = z.enum([
   "strong_fumes",
@@ -14,11 +15,11 @@ export const safetyFlagSchema = z.enum([
 export const submitObservationSchema = z.object({
   streamId: z.uuid().nullable().optional(),
   category: incidentCategorySchema,
-  location: coordinatesSchema,
+  location: reportedLocationSchema,
   locationLabel: z.string().trim().max(200).optional(),
   observedAt: z.iso.datetime({ offset: true }),
-  description: z.string().trim().min(1).max(2_000),
-  answers: z.record(z.string(), z.unknown()).default({}),
+  description: z.string().trim().min(1).max(2_000).transform(redactLocationText),
+  answers: observationAnswersSchema,
   safetyFlags: z.array(safetyFlagSchema).max(6).default([]),
 });
 

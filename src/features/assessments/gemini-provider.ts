@@ -1,3 +1,4 @@
+import { observationAnswersSchema, redactLocationText } from "@/features/locations/contracts";
 import { assessmentResultSchema, type AssessmentEvidence } from "./contracts";
 import type { AssessmentProvider } from "./provider";
 
@@ -75,10 +76,20 @@ export class GeminiAssessmentProvider implements AssessmentProvider {
 
   async assess(evidence: AssessmentEvidence) {
     const textEvidence = {
-      ...evidence,
-      observations: evidence.observations.map(({ media, ...observation }) => ({
-        ...observation,
-        media: media.map(({ id, mimeType }) => ({ id, mimeType })),
+      incidentId: evidence.incidentId,
+      category: evidence.category,
+      evidenceRevision: evidence.evidenceRevision,
+      observations: evidence.observations.map((observation) => ({
+        id: observation.id,
+        missionType: observation.missionType,
+        observedAt: observation.observedAt,
+        description: redactLocationText(observation.description),
+        answers: observationAnswersSchema.safeParse(observation.answers).data ?? {},
+        safetyFlags: observation.safetyFlags,
+        isPotentialDuplicate: observation.isPotentialDuplicate,
+        locationQualityFlag: observation.locationQualityFlag ?? null,
+        invalidatedAt: observation.invalidatedAt,
+        media: observation.media.map(({ id, mimeType }) => ({ id, mimeType })),
       })),
     };
     const imageParts = evidence.observations.flatMap((observation) =>

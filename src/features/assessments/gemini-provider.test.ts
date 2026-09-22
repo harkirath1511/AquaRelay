@@ -35,8 +35,8 @@ describe("GeminiAssessmentProvider", () => {
         authorId: "user",
         missionType: null,
         observedAt: "2026-09-21T10:00:00Z",
-        description: "White foam",
-        answers: {},
+        description: "White foam at 51.501234, -0.123456",
+        answers: { exactLocation: { latitude: 51.501234, longitude: -0.123456 } },
         safetyFlags: [],
         isPotentialDuplicate: false,
         invalidatedAt: null,
@@ -48,6 +48,10 @@ describe("GeminiAssessmentProvider", () => {
 
     const request = JSON.parse(fetchMock.mock.calls[0][1].body as string);
     const parts = request.contents[0].parts;
+    expect(parts[0].text).not.toContain("51.501234");
+    expect(parts[0].text).not.toContain("-0.123456");
+    expect(parts[0].text).not.toContain("exactLocation");
+    expect(parts[0].text).not.toContain("authorId");
     expect(parts[0].text).not.toContain("base64-image-data");
     expect(parts[1]).toEqual({
       inlineData: { mimeType: "image/jpeg", data: "base64-image-data" },

@@ -35,6 +35,17 @@ const baseAssessment: AssessmentResult = {
 };
 
 describe("evaluateEvidence", () => {
+  it("does not count far-away responses as independent support but preserves hazards", () => {
+    const evidence: AssessmentEvidence = {
+      ...baseEvidence,
+      observations: [...baseEvidence.observations, {
+        ...baseEvidence.observations[0], authorId: "user-two", locationQualityFlag: "far_from_target",
+      }],
+    };
+    expect(evaluateEvidence(evidence, baseAssessment).status).toBe("needs_verification");
+    evidence.observations[1].safetyFlags = ["strong_fumes"];
+    expect(evaluateEvidence(evidence, baseAssessment).pauseMissions).toBe(true);
+  });
   it("routes serious safety signals directly to review and pauses missions", () => {
     const decision = evaluateEvidence(baseEvidence, {
       ...baseAssessment,

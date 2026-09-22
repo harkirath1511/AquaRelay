@@ -11,6 +11,7 @@ interface MissionResponseRecord {
   observation_id: string;
   evidence_revision: number;
   impact_points: number;
+  location_quality_flag: "far_from_target" | "target_unknown" | null;
   replayed: boolean;
 }
 
@@ -51,6 +52,8 @@ export class SupabaseMissionRepository implements MissionRepository {
       p_idempotency_key: idempotencyKey,
       p_latitude: input.location.latitude,
       p_longitude: input.location.longitude,
+      p_accuracy_meters: input.location.accuracyMeters,
+      p_location_source: input.location.source,
       p_observed_at: input.observedAt,
       p_description: input.description,
       p_answers: input.answers,
@@ -64,6 +67,7 @@ export class SupabaseMissionRepository implements MissionRepository {
       observationId: record.observation_id,
       evidenceRevision: record.evidence_revision,
       impactPoints: record.impact_points,
+      locationQualityFlag: record.location_quality_flag,
       replayed: record.replayed,
     };
   }

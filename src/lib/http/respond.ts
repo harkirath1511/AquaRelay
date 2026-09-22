@@ -24,12 +24,12 @@ export function errorResponse(error: unknown) {
 
   if (error instanceof ZodError) {
     return NextResponse.json(
-      { error: { code: "validation_error", message: "Request validation failed", issues: error.issues } },
+      { error: { code: "validation_error", message: "Request validation failed", issues: error.issues.map(({ code }) => ({ code })) } },
       { status: 400 },
     );
   }
 
-  console.error(error);
+  console.error("Backend request failed");
   return NextResponse.json(
     { error: { code: "internal_error", message: "The request could not be completed" } },
     { status: 500 },

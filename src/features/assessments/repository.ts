@@ -53,7 +53,7 @@ export class SupabaseAssessmentRepository implements AssessmentRepository {
     const { data, error } = await this.adminClient
       .from("incidents")
       .select(
-        "id, category, evidence_revision, observations(id, author_id, observed_at, description, answers, safety_flags, is_potential_duplicate, invalidated_at, missions(type), media(id, object_path, mime_type, processing_state))",
+        "id, category, evidence_revision, observations(id, author_id, observed_at, description, answers, safety_flags, is_potential_duplicate, location_quality_flag, invalidated_at, missions(type), media(id, object_path, mime_type, processing_state))",
       )
       .eq("id", incidentId)
       .single();
@@ -72,6 +72,7 @@ export class SupabaseAssessmentRepository implements AssessmentRepository {
         safety_flags: string[];
         is_potential_duplicate: boolean;
         invalidated_at: string | null;
+        location_quality_flag: string | null;
         missions: { type: string } | null;
         media: Array<{
           id: string;
@@ -110,6 +111,7 @@ export class SupabaseAssessmentRepository implements AssessmentRepository {
         answers: observation.answers,
         safetyFlags: observation.safety_flags,
         isPotentialDuplicate: observation.is_potential_duplicate,
+        locationQualityFlag: observation.location_quality_flag,
         invalidatedAt: observation.invalidated_at,
         media,
       });
