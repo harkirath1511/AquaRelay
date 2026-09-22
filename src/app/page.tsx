@@ -1,3 +1,2 @@
-export default function Home() {
-  return <main>AquaRelay backend foundation is running.</main>;
-}
+import { Landing } from "@/components/aqua/pages";
+export default function Home() { return <Landing />; }
