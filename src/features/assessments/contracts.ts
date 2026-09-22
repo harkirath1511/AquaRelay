@@ -36,6 +36,14 @@ export interface AssessmentEvidence {
     safetyFlags: string[];
     isPotentialDuplicate: boolean;
     locationQualityFlag?: string | null;
+    locationQuality?: "precise" | "approximate" | "low_accuracy" | "manually_selected" | "location_conflict";
+    locationConflicts?: string[];
+    spatialFacts?: {
+      distanceFromOrigin: "within_100m" | "within_250m" | "within_1km" | "over_1km" | "unknown";
+      streamRelationship: "same" | "different" | "unknown";
+      flowRelationship: "upstream" | "downstream" | "same_reach" | "unknown";
+      insideTargetRadius: boolean | null;
+    };
     invalidatedAt: string | null;
     media: Array<{
       id: string;

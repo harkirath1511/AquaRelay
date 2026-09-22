@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { SupabaseIncidentReader } from "@/features/observations/repository";
+import { consumeLocationReadQuota } from "@/features/locations/read-quota";
 import { requireUser } from "@/lib/auth/require-user";
 import { errorResponse } from "@/lib/http/respond";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const incidentIdSchema = z.uuid();
 
@@ -13,11 +15,12 @@ export async function GET(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    await requireUser();
+    const user = await requireUser();
     const { id: unknownId } = await context.params;
     const id = incidentIdSchema.parse(unknownId);
     const supabase = await createSupabaseServerClient();
-    const incident = await new SupabaseIncidentReader(supabase).findById(id);
+    await consumeLocationReadQuota(supabase, user.id, "incident_detail");
+    const incident = await new SupabaseIncidentReader(createSupabaseAdminClient()).findById(id);
 
     if (!incident) {
       return NextResponse.json(
@@ -26,7 +29,7 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ incident });
+    return NextResponse.json({ incident }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     return errorResponse(error);
   }

@@ -1,4 +1,4 @@
-import { observationAnswersSchema, redactLocationText } from "@/features/locations/contracts";
+import { locationConflictSchema, observationAnswersSchema, redactLocationText, spatialFactsSchema } from "@/features/locations/contracts";
 import { assessmentResultSchema, type AssessmentEvidence } from "./contracts";
 import type { AssessmentProvider } from "./provider";
 
@@ -88,6 +88,9 @@ export class GeminiAssessmentProvider implements AssessmentProvider {
         safetyFlags: observation.safetyFlags,
         isPotentialDuplicate: observation.isPotentialDuplicate,
         locationQualityFlag: observation.locationQualityFlag ?? null,
+        locationQuality: observation.locationQuality ?? "low_accuracy",
+        locationConflicts: (observation.locationConflicts ?? []).filter((code) => locationConflictSchema.safeParse(code).success),
+        spatialFacts: spatialFactsSchema.safeParse(observation.spatialFacts).data ?? null,
         invalidatedAt: observation.invalidatedAt,
         media: observation.media.map(({ id, mimeType }) => ({ id, mimeType })),
       })),

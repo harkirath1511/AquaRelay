@@ -32,7 +32,7 @@ export class SupabaseReviewRepository implements ReviewRepository {
     const { data, error } = await this.supabase
       .from("incidents")
       .select(
-        "id, stream_id, category, location, location_label, evidence_status, status_reasons, safety_state, evidence_revision, opened_at, updated_at",
+        "id, stream_id, category, location, location_label, evidence_status, status_reasons, safety_state, evidence_revision, opened_at, updated_at, observations(id, location_quality, location_conflicts, spatial_facts)",
       )
       .in("evidence_status", ["expert_review_recommended", "community_supported_concern"])
       .is("resolved_at", null)

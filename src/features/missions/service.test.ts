@@ -16,7 +16,8 @@ const repository: MissionRepository = {
 
 describe("MissionService", () => {
   it("requires both coordinates when filtering nearby missions", async () => {
-    await expect(new MissionService(repository).list({ latitude: "51.5" })).rejects.toThrow();
+    await expect(new MissionService(repository).list("user", { latitude: "51.5" })).rejects.toThrow();
+    await expect(new MissionService(repository).list("user", { latitude: 51.5, longitude: -0.1, radiusMeters: 20_000 })).rejects.toThrow();
   });
 
   it("validates a mission response before persistence", async () => {
@@ -26,7 +27,7 @@ describe("MissionService", () => {
       "user",
       "request-123",
       {
-        location: { latitude: 51.5, longitude: -0.1, source: "device", accuracyMeters: 12 },
+        location: { latitude: 51.5, longitude: -0.1, source: "device", accuracyMeters: 12, capturedAt: new Date().toISOString() },
         observedAt: "2026-09-21T11:00:00+00:00",
         description: "No foam at this comparison point",
       },

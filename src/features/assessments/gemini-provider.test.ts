@@ -39,6 +39,9 @@ describe("GeminiAssessmentProvider", () => {
         answers: { exactLocation: { latitude: 51.501234, longitude: -0.123456 } },
         safetyFlags: [],
         isPotentialDuplicate: false,
+        locationQuality: "approximate",
+        locationConflicts: ["outside_target_radius", "51.501234"],
+        spatialFacts: { distanceFromOrigin: "within_250m", streamRelationship: "same", flowRelationship: "upstream", insideTargetRadius: true },
         invalidatedAt: null,
         media: [{ id: "media", mimeType: "image/jpeg", data: "base64-image-data" }],
       }],
@@ -52,6 +55,9 @@ describe("GeminiAssessmentProvider", () => {
     expect(parts[0].text).not.toContain("-0.123456");
     expect(parts[0].text).not.toContain("exactLocation");
     expect(parts[0].text).not.toContain("authorId");
+    expect(parts[0].text).toContain("within_250m");
+    expect(parts[0].text).toContain("upstream");
+    expect(parts[0].text).toContain("outside_target_radius");
     expect(parts[0].text).not.toContain("base64-image-data");
     expect(parts[1]).toEqual({
       inlineData: { mimeType: "image/jpeg", data: "base64-image-data" },

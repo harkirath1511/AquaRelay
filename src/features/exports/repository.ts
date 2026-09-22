@@ -13,7 +13,8 @@ export class IncidentExportRepository {
           streams (id, name, city),
           observations (
             id, mission_id, author_id, observed_at, submitted_at, location,
-            description, answers, safety_flags, is_potential_duplicate, location_quality_flag, invalidated_at,
+            description, answers, safety_flags, is_potential_duplicate, location_quality_flag,
+            location_quality, location_conflicts, spatial_facts, invalidated_at,
             media (id, object_path, mime_type, byte_size, processing_state)
           ),
           missions (id, type, state, evidence_gap, available_from, due_at),

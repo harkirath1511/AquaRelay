@@ -18,6 +18,8 @@ const baseEvidence: AssessmentEvidence = {
       answers: {},
       safetyFlags: [],
       isPotentialDuplicate: false,
+      locationQuality: "precise",
+      spatialFacts: { distanceFromOrigin: "within_100m", streamRelationship: "same", flowRelationship: "same_reach", insideTargetRadius: null },
       invalidatedAt: null,
       media: [],
     },
@@ -68,8 +70,10 @@ describe("evaluateEvidence", () => {
       ...baseEvidence,
       observations: [
         ...baseEvidence.observations,
-        { ...baseEvidence.observations[0], id: "0fd4443f-29c7-4431-b515-734e75ef19d7", authorId: "user-two", missionType: "upstream_comparison" },
-        { ...baseEvidence.observations[0], id: "858e6787-119f-42f5-a9d5-8b62b8dcf85c", authorId: "user-three", missionType: "repeat_observation" },
+        { ...baseEvidence.observations[0], id: "0fd4443f-29c7-4431-b515-734e75ef19d7", authorId: "user-two", missionType: "upstream_comparison",
+          spatialFacts: { distanceFromOrigin: "within_250m", streamRelationship: "same", flowRelationship: "upstream", insideTargetRadius: true } },
+        { ...baseEvidence.observations[0], id: "858e6787-119f-42f5-a9d5-8b62b8dcf85c", authorId: "user-three", missionType: "repeat_observation",
+          spatialFacts: { distanceFromOrigin: "within_100m", streamRelationship: "same", flowRelationship: "same_reach", insideTargetRadius: true } },
       ],
     };
     expect(evaluateEvidence(evidence, baseAssessment).status).toBe("expert_review_recommended");
@@ -84,5 +88,16 @@ describe("evaluateEvidence", () => {
       ],
     };
     expect(evaluateEvidence(evidence, baseAssessment).status).toBe("needs_verification");
+  });
+  it("does not treat a manually selected wide area as independent spatial support", () => {
+    const evidence: AssessmentEvidence = {
+      ...baseEvidence,
+      observations: [...baseEvidence.observations, {
+        ...baseEvidence.observations[0], id: "0fd4443f-29c7-4431-b515-734e75ef19d7",
+        authorId: "user-two", locationQuality: "low_accuracy",
+      }],
+    };
+    expect(evaluateEvidence(evidence, baseAssessment).status).toBe("needs_verification");
+    expect(evaluateEvidence(evidence, baseAssessment).reasons[0]).toContain("uncertain");
   });
 });

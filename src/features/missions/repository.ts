@@ -12,11 +12,13 @@ interface MissionResponseRecord {
   evidence_revision: number;
   impact_points: number;
   location_quality_flag: "far_from_target" | "target_unknown" | null;
+  location_quality: MissionResponseResult["locationQuality"];
+  spatial_facts: Record<string, unknown>;
   replayed: boolean;
 }
 
 export interface MissionRepository {
-  list(query: MissionListQuery): Promise<unknown[]>;
+  list(userId: string, query: MissionListQuery): Promise<unknown[]>;
   respond(
     missionId: string,
     userId: string,
@@ -28,11 +30,16 @@ export interface MissionRepository {
 export class SupabaseMissionRepository implements MissionRepository {
   constructor(private readonly supabase: SupabaseClient) {}
 
-  async list(query: MissionListQuery) {
+  async list(userId: string, query: MissionListQuery) {
+    // Snap the request to the same stable public cell so a caller cannot
+    // triangulate an exact target with arbitrarily small radius probes.
+    const cellCenter = (value: number, offset: number, limit: number) =>
+      Math.min(limit, Math.floor((value + offset) * 100) / 100 - offset + 0.005);
     const { data, error } = await this.supabase.rpc("list_available_missions", {
-      p_latitude: query.latitude ?? null,
-      p_longitude: query.longitude ?? null,
-      p_radius_meters: query.radiusMeters,
+      p_requester_id: userId,
+      p_latitude: cellCenter(query.latitude, 90, 89.995),
+      p_longitude: cellCenter(query.longitude, 180, 179.995),
+      p_radius_meters: Math.ceil((query.radiusMeters + 800) / 1_000) * 1_000,
       p_type: query.type ?? null,
       p_limit: query.limit,
     });
@@ -54,6 +61,7 @@ export class SupabaseMissionRepository implements MissionRepository {
       p_longitude: input.location.longitude,
       p_accuracy_meters: input.location.accuracyMeters,
       p_location_source: input.location.source,
+      p_captured_at: input.location.capturedAt,
       p_observed_at: input.observedAt,
       p_description: input.description,
       p_answers: input.answers,
@@ -68,6 +76,8 @@ export class SupabaseMissionRepository implements MissionRepository {
       evidenceRevision: record.evidence_revision,
       impactPoints: record.impact_points,
       locationQualityFlag: record.location_quality_flag,
+      locationQuality: record.location_quality,
+      spatialFacts: record.spatial_facts,
       replayed: record.replayed,
     };
   }

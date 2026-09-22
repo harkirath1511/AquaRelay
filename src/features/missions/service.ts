@@ -9,8 +9,8 @@ const idempotencyKeySchema = z.string().trim().min(8).max(200);
 export class MissionService {
   constructor(private readonly repository: MissionRepository) {}
 
-  async list(unknownQuery: unknown) {
-    return await this.repository.list(missionListQuerySchema.parse(unknownQuery));
+  async list(userId: string, unknownQuery: unknown) {
+    return await this.repository.list(userId, missionListQuerySchema.parse(unknownQuery));
   }
 
   async respond(

@@ -21,13 +21,19 @@ export function evaluateEvidence(
   assessment: AssessmentResult,
 ): EvidenceDecision {
   const usable = evidence.observations.filter(
-    (observation) => !observation.isPotentialDuplicate && !observation.invalidatedAt && !observation.locationQualityFlag,
+    (observation) => !observation.isPotentialDuplicate && !observation.invalidatedAt
+      && !observation.locationQualityFlag
+      && (observation.locationQuality === "precise" || observation.locationQuality === "approximate"),
   );
   const contributorCount = new Set(usable.map((observation) => observation.authorId)).size;
-  const missionTypes = new Set(usable.map((observation) => observation.missionType));
-  const hasSpatialComparison =
-    missionTypes.has("upstream_comparison") || missionTypes.has("downstream_comparison");
-  const hasPersistence = missionTypes.has("repeat_observation");
+  const hasSpatialComparison = usable.some((observation) =>
+    observation.spatialFacts?.insideTargetRadius === true && (
+      (observation.missionType === "upstream_comparison" && observation.spatialFacts.flowRelationship === "upstream")
+      || (observation.missionType === "downstream_comparison" && observation.spatialFacts.flowRelationship === "downstream")
+    ),
+  );
+  const hasPersistence = usable.some((observation) => observation.missionType === "repeat_observation"
+    && observation.spatialFacts?.insideTargetRadius === true);
   const hasSeriousSafetyFlag = [...assessment.safetyFlags, ...evidence.observations.flatMap((o) => o.safetyFlags)]
     .some((flag) => seriousSafetyFlags.has(flag));
 
@@ -65,7 +71,9 @@ export function evaluateEvidence(
 
   return {
     status: "needs_verification",
-    reasons: assessment.missingEvidence.length
+    reasons: usable.length < evidence.observations.length
+      ? ["Some evidence has uncertain or conflicting location information and needs review."]
+      : assessment.missingEvidence.length
       ? assessment.missingEvidence.slice(0, 5)
       : ["Independent verification is still needed."],
     pauseMissions: false,

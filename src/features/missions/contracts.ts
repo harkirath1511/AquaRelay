@@ -4,18 +4,13 @@ import { z } from "zod";
 import { missionTypeSchema } from "@/domain/model";
 import { safetyFlagSchema } from "@/features/observations/contracts";
 
-export const missionListQuerySchema = z
-  .object({
-    latitude: z.coerce.number().min(-90).max(90).optional(),
-    longitude: z.coerce.number().min(-180).max(180).optional(),
-    radiusMeters: z.coerce.number().int().min(100).max(20_000).default(5_000),
+export const missionListQuerySchema = z.object({
+    latitude: z.coerce.number().min(-90).max(90),
+    longitude: z.coerce.number().min(-180).max(180),
+    radiusMeters: z.coerce.number().int().min(1_000).max(5_000).default(5_000),
     type: missionTypeSchema.optional(),
-    limit: z.coerce.number().int().min(1).max(100).default(25),
-  })
-  .refine(
-    (value) => (value.latitude === undefined) === (value.longitude === undefined),
-    { message: "latitude and longitude must be provided together" },
-  );
+    limit: z.coerce.number().int().min(1).max(25).default(25),
+  }).strict();
 
 export const submitMissionResponseSchema = z.object({
   location: reportedLocationSchema,
@@ -34,5 +29,7 @@ export interface MissionResponseResult {
   evidenceRevision: number;
   impactPoints: number;
   locationQualityFlag: "far_from_target" | "target_unknown" | null;
+  locationQuality: "precise" | "approximate" | "low_accuracy" | "manually_selected" | "location_conflict";
+  spatialFacts: Record<string, unknown>;
   replayed: boolean;
 }

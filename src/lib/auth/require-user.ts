@@ -46,3 +46,17 @@ export async function requireReviewer(): Promise<User> {
 
   return user;
 }
+
+export async function requireAdmin(): Promise<User> {
+  const user = await requireUser();
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  if (error || data?.role !== "admin") {
+    throw new AuthorizationError("Administrator access is required");
+  }
+  return user;
+}

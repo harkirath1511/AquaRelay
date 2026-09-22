@@ -53,7 +53,7 @@ export class SupabaseAssessmentRepository implements AssessmentRepository {
     const { data, error } = await this.adminClient
       .from("incidents")
       .select(
-        "id, category, evidence_revision, observations(id, author_id, observed_at, description, answers, safety_flags, is_potential_duplicate, location_quality_flag, invalidated_at, missions(type), media(id, object_path, mime_type, processing_state))",
+        "id, category, evidence_revision, observations(id, author_id, observed_at, description, answers, safety_flags, is_potential_duplicate, location_quality_flag, location_quality, location_conflicts, spatial_facts, invalidated_at, missions(type), media(id, object_path, mime_type, processing_state))",
       )
       .eq("id", incidentId)
       .single();
@@ -73,6 +73,9 @@ export class SupabaseAssessmentRepository implements AssessmentRepository {
         is_potential_duplicate: boolean;
         invalidated_at: string | null;
         location_quality_flag: string | null;
+        location_quality: AssessmentEvidence["observations"][number]["locationQuality"];
+        location_conflicts: string[];
+        spatial_facts: AssessmentEvidence["observations"][number]["spatialFacts"];
         missions: { type: string } | null;
         media: Array<{
           id: string;
@@ -112,6 +115,9 @@ export class SupabaseAssessmentRepository implements AssessmentRepository {
         safetyFlags: observation.safety_flags,
         isPotentialDuplicate: observation.is_potential_duplicate,
         locationQualityFlag: observation.location_quality_flag,
+        locationQuality: observation.location_quality,
+        locationConflicts: observation.location_conflicts,
+        spatialFacts: observation.spatial_facts,
         invalidatedAt: observation.invalidated_at,
         media,
       });

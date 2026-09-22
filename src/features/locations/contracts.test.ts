@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { reportedLocationSchema, observationAnswersSchema, redactLocationText } from "./contracts";
 
 describe("reported location privacy", () => {
-  const valid = { latitude: 51.501234, longitude: -0.123456, source: "device", accuracyMeters: 15 };
+  const valid = { latitude: 51.501234, longitude: -0.123456, source: "device", accuracyMeters: 15, capturedAt: new Date().toISOString() };
   it.each([NaN, Infinity, -Infinity, 91])("rejects invalid latitude %s", (latitude) => {
     expect(reportedLocationSchema.safeParse({ ...valid, latitude }).success).toBe(false);
   });
@@ -16,6 +16,11 @@ describe("reported location privacy", () => {
     for (const source of ["map", "search"]) {
       expect(reportedLocationSchema.parse({ ...valid, source, accuracyMeters: null }).source).toBe(source);
     }
+  });
+  it("separates capture time from observation time and rejects old or future fixes", () => {
+    expect(reportedLocationSchema.safeParse({ ...valid, capturedAt: new Date(Date.now() - 31 * 86_400_000).toISOString() }).success).toBe(false);
+    expect(reportedLocationSchema.safeParse({ ...valid, capturedAt: new Date(Date.now() + 6 * 60_000).toISOString() }).success).toBe(false);
+    expect(reportedLocationSchema.safeParse(valid).success).toBe(true);
   });
   it("rejects alternate coordinate containers in survey answers", () => {
     expect(observationAnswersSchema.safeParse({ nested: { coordinates: [51.501234, -0.123456] } }).success).toBe(false);

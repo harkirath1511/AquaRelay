@@ -4,6 +4,7 @@ import { ZodError } from "zod";
 import { AuthenticationError, AuthorizationError } from "@/lib/auth/require-user";
 import { AssessmentConflictError } from "@/features/assessments/repository";
 import { UploadLimitError } from "@/features/uploads/repository";
+import { LocationReadLimitError } from "@/features/locations/read-quota";
 
 export function errorResponse(error: unknown) {
   if (error instanceof AuthenticationError) {
@@ -20,6 +21,10 @@ export function errorResponse(error: unknown) {
 
   if (error instanceof UploadLimitError) {
     return NextResponse.json({ error: { code: "upload_limit", message: error.message } }, { status: 409 });
+  }
+
+  if (error instanceof LocationReadLimitError) {
+    return NextResponse.json({ error: { code: "rate_limited", message: error.message } }, { status: 429 });
   }
 
   if (error instanceof ZodError) {

@@ -38,6 +38,7 @@ export class SupabaseObservationRepository implements ObservationRepository {
       p_longitude: input.location.longitude,
       p_accuracy_meters: input.location.accuracyMeters,
       p_location_source: input.location.source,
+      p_captured_at: input.location.capturedAt,
       p_location_label: input.locationLabel ?? null,
       p_observed_at: input.observedAt,
       p_description: input.description,
@@ -93,7 +94,8 @@ export class SupabaseIncidentReader {
           resolved_at, updated_at,
           observations (
             id, mission_id, author_id, observed_at, submitted_at, location,
-            description, answers, safety_flags, is_potential_duplicate, location_quality_flag, invalidated_at
+            description, answers, safety_flags, is_potential_duplicate, location_quality_flag,
+            location_quality, location_conflicts, spatial_facts, invalidated_at
           ),
           missions (
             id, type, state, evidence_gap, instructions, safety_message,
