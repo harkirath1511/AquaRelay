@@ -95,7 +95,8 @@ export class SupabaseIncidentReader {
           observations (
             id, mission_id, author_id, observed_at, submitted_at, location,
             description, answers, safety_flags, is_potential_duplicate, location_quality_flag,
-            location_quality, location_conflicts, spatial_facts, invalidated_at
+            location_quality, location_conflicts, spatial_facts, invalidated_at,
+            media (id, object_path, processing_state)
           ),
           missions (
             id, type, state, evidence_gap, instructions, safety_message,
@@ -109,11 +110,34 @@ export class SupabaseIncidentReader {
         `,
       )
       .eq("id", id)
-      .order("submitted_at", { referencedTable: "observations", ascending: true })
-      .order("created_at", { referencedTable: "incident_events", ascending: true })
+      .order("submitted_at", {
+        referencedTable: "observations",
+        ascending: true,
+      })
+      .order("created_at", {
+        referencedTable: "incident_events",
+        ascending: true,
+      })
       .maybeSingle();
 
     if (error) throw new Error(`Incident lookup failed: ${error.message}`);
-    return data;
+    if (!data) return null;
+    // Only processed images cross the participant boundary. Storage paths stay server-side.
+    const observations = await Promise.all(
+      data.observations.map(async (observation) => ({
+        ...observation,
+        media: await Promise.all(
+          observation.media
+            .filter((media) => media.processing_state === "ready")
+            .map(async (media) => {
+              const { data: signed } = await this.supabase.storage
+                .from("observation-media")
+                .createSignedUrl(media.object_path, 900);
+              return { id: media.id, url: signed?.signedUrl ?? null };
+            }),
+        ),
+      })),
+    );
+    return { ...data, observations };
   }
 }

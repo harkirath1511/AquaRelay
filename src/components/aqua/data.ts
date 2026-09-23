@@ -1,34 +1,291 @@
 import type { EvidenceStatus, IncidentCategory } from "@/domain/model";
-export const naturePhoto = "https://images.unsplash.com/photo-1437482078695-73f5ca6c96e2?auto=format&fit=crop&w=2000&q=85";
-export const statuses: Record<EvidenceStatus, { label: string; icon: string; description: string }> = {
-  early_signal: { label: "Early signal", icon: "◌", description: "An observation has been reported. More context is needed." },
-  needs_verification: { label: "Needs verification", icon: "◈", description: "Independent observations can help fill the evidence gaps." },
-  community_supported_concern: { label: "Community-supported concern", icon: "◎", description: "Independent contributions support a concern, but do not establish its cause." },
-  expert_review_recommended: { label: "Expert review recommended", icon: "✳", description: "The evidence warrants assessment by a qualified reviewer." },
-  resolved_or_explained: { label: "Resolved or explained", icon: "✓", description: "A reviewer has documented an outcome. This is not a water-safety determination." },
+export const naturePhoto =
+  "https://images.unsplash.com/photo-1437482078695-73f5ca6c96e2?auto=format&fit=crop&w=2000&q=85";
+export const foamPhoto = "/images/demo-foam.png";
+export const statuses: Record<
+  EvidenceStatus,
+  { label: string; icon: string; description: string }
+> = {
+  early_signal: {
+    label: "Early signal",
+    icon: "◌",
+    description: "An observation has been reported. More context is needed.",
+  },
+  needs_verification: {
+    label: "Needs verification",
+    icon: "◈",
+    description: "Independent observations can help fill the evidence gaps.",
+  },
+  community_supported_concern: {
+    label: "Community-supported concern",
+    icon: "◎",
+    description:
+      "Independent contributions support a concern, but do not establish its cause.",
+  },
+  expert_review_recommended: {
+    label: "Expert review recommended",
+    icon: "✳",
+    description: "The evidence warrants assessment by a qualified reviewer.",
+  },
+  resolved_or_explained: {
+    label: "Resolved or explained",
+    icon: "✓",
+    description:
+      "A reviewer has documented an outcome. This is not a water-safety determination.",
+  },
 };
-export interface Observation { id: string; description: string; observed_at: string; is_potential_duplicate?: boolean; safety_flags?: string[]; label?: string; contributor?: string; change?: string; kind?: string; }
-export interface Assessment { id?: string; state: string; completed_at?: string; result?: { summary?: { text: string }; observedFeatures?: { text: string }[]; missingEvidence?: string[]; contradictions?: { text: string }[]; possibleExplanations?: { text: string }[] }; }
-export interface Incident { id: string; category: IncidentCategory; location_label: string; evidence_status: EvidenceStatus; safety_state: string; is_demo?: boolean; updated_at: string; opened_at?: string; location?: { coordinates?: number[] }; observations?: Observation[]; assessments?: Assessment[]; incident_events?: { id: string; type: string; created_at: string; payload?: unknown }[]; missions?: Mission[]; title?: string; distance?: number; }
-export interface Mission { id: string; incident_id?: string; type: string; state?: string; evidence_gap: string; instructions: string; safety_message: string; distance_meters?: number; target_location?: { coordinates?: number[] }; }
+export interface Observation {
+  location?: { coordinates?: number[] };
+  id: string;
+  description: string;
+  observed_at: string;
+  is_potential_duplicate?: boolean;
+  safety_flags?: string[];
+  label?: string;
+  contributor?: string;
+  change?: string;
+  kind?: string;
+  media?: { id: string; url?: string }[];
+}
+export interface Assessment {
+  id?: string;
+  state: string;
+  completed_at?: string;
+  result?: {
+    summary?: { text: string };
+    observedFeatures?: { text: string }[];
+    missingEvidence?: string[];
+    contradictions?: { text: string }[];
+    possibleExplanations?: { text: string }[];
+  };
+}
+export interface Incident {
+  id: string;
+  category: IncidentCategory;
+  location_label: string;
+  evidence_status: EvidenceStatus;
+  safety_state: string;
+  is_demo?: boolean;
+  updated_at: string;
+  opened_at?: string;
+  location?: { coordinates?: number[] };
+  observations?: Observation[];
+  assessments?: Assessment[];
+  incident_events?: {
+    id: string;
+    type: string;
+    created_at: string;
+    payload?: unknown;
+  }[];
+  missions?: Mission[];
+  title?: string;
+  distance?: number;
+}
+export interface Mission {
+  id: string;
+  incident_id?: string;
+  type: string;
+  state?: string;
+  evidence_gap: string;
+  instructions: string;
+  safety_message: string;
+  distance_meters?: number;
+  target_location?: { coordinates?: number[] };
+}
 export const demoObservations: Observation[] = [
-  { id: "demo-1", contributor: "Maya", label: "The first observation", observed_at: "2026-09-22T09:10:00+05:30", description: "White foam is collecting along the stream edge near the footbridge. It stays in patches as the water moves.", change: "Opened an investigation. A photograph alone cannot explain the cause.", kind: "Original report" },
-  { id: "demo-2", contributor: "Arjun", label: "Upstream looks different", observed_at: "2026-09-22T09:28:00+05:30", description: "No visible foam from the upstream public path. The water surface looks clear here.", change: "Added a comparison: the visible condition may be local to this reach.", kind: "Comparison" },
-  { id: "demo-3", contributor: "Leela", label: "A downstream confirmation", observed_at: "2026-09-22T09:42:00+05:30", description: "Similar foam patches are visible downstream from the bridge, seen from the public walkway.", change: "An independent observation supports the original report.", kind: "Supporting evidence" },
-  { id: "demo-4", contributor: "Maya", label: "Still visible one hour later", observed_at: "2026-09-22T10:10:00+05:30", description: "Returned to the same public viewpoint after one hour. Foam is still collecting along the edge.", change: "Established persistence over time; this is not a second independent witness.", kind: "Repeat observation" },
-  { id: "demo-5", contributor: "Dev", label: "An unusual smell reported", observed_at: "2026-09-22T10:18:00+05:30", description: "An unusual strong smell was noticeable from the path. I moved away without approaching the water.", change: "Raised a safety flag. Nearby verification missions were paused.", kind: "Safety flag", safety_flags: ["strong_fumes"] },
-  { id: "demo-6", contributor: "Community member", label: "A duplicate, kept for transparency", observed_at: "2026-09-22T10:25:00+05:30", description: "The original photograph was shared again. It records the same observation, not new evidence.", change: "Linked as a potential duplicate. It adds no independent support.", kind: "Duplicate", is_potential_duplicate: true },
+  {
+    id: "demo-1",
+    contributor: "Maya",
+    label: "The first observation",
+    observed_at: "2026-09-22T09:10:00+05:30",
+    description:
+      "White foam is collecting along the stream edge near the footbridge. It stays in patches as the water moves.",
+    change:
+      "Opened an investigation. A photograph alone cannot explain the cause.",
+    kind: "Original report",
+  },
+  {
+    id: "demo-2",
+    contributor: "Arjun",
+    label: "Upstream looks different",
+    observed_at: "2026-09-22T09:28:00+05:30",
+    description:
+      "No visible foam from the upstream public path. The water surface looks clear here.",
+    change:
+      "Added a comparison: the visible condition may be local to this reach.",
+    kind: "Comparison",
+  },
+  {
+    id: "demo-3",
+    contributor: "Leela",
+    label: "A downstream confirmation",
+    observed_at: "2026-09-22T09:42:00+05:30",
+    description:
+      "Similar foam patches are visible downstream from the bridge, seen from the public walkway.",
+    change: "An independent observation supports the original report.",
+    kind: "Supporting evidence",
+  },
+  {
+    id: "demo-4",
+    contributor: "Maya",
+    label: "Still visible one hour later",
+    observed_at: "2026-09-22T10:10:00+05:30",
+    description:
+      "Returned to the same public viewpoint after one hour. Foam is still collecting along the edge.",
+    change:
+      "Established persistence over time; this is not a second independent witness.",
+    kind: "Repeat observation",
+  },
+  {
+    id: "demo-5",
+    contributor: "Dev",
+    label: "An unusual smell reported",
+    observed_at: "2026-09-22T10:18:00+05:30",
+    description:
+      "An unusual strong smell was noticeable from the path. I moved away without approaching the water.",
+    change: "Raised a safety flag. Nearby verification missions were paused.",
+    kind: "Safety flag",
+    safety_flags: ["strong_fumes"],
+  },
+  {
+    id: "demo-6",
+    contributor: "Community member",
+    label: "A duplicate, kept for transparency",
+    observed_at: "2026-09-22T10:25:00+05:30",
+    description:
+      "The original photograph was shared again. It records the same observation, not new evidence.",
+    change: "Linked as a potential duplicate. It adds no independent support.",
+    kind: "Duplicate",
+    is_potential_duplicate: true,
+  },
 ];
+demoObservations[0].media = [{ id: "demo-photo-original", url: foamPhoto }];
+demoObservations[5].media = [{ id: "demo-photo-duplicate", url: foamPhoto }];
 export const demoMissions: Mission[] = [
-  { id: "demo-upstream", incident_id: "demo-foam", type: "upstream_comparison", state: "paused", distance_meters: 600, evidence_gap: "Where does the visible foam begin?", instructions: "From a public path, observe the surface upstream. Record whether foam is visible; do not enter the water.", safety_message: "Paused after a strong-smell report. Do not approach this area." },
-  { id: "demo-repeat", incident_id: "demo-litter", type: "repeat_observation", state: "available", distance_meters: 1400, evidence_gap: "Is the litter still collecting at the bend?", instructions: "Take a wide photograph from the public footpath. Describe what you see and record the observation time.", safety_message: "Stay on the public path. Do not touch or collect waste." },
-  { id: "demo-comparison", incident_id: "demo-flow", type: "unaffected_comparison", state: "available", distance_meters: 2300, evidence_gap: "Does the low flow extend to the next reach?", instructions: "Observe the stream from the marked public bridge. A photograph of an unaffected reach is useful evidence too.", safety_message: "Keep behind the bridge railing. Skip the mission if access feels unsafe." },
+  {
+    id: "demo-upstream",
+    incident_id: "demo-foam",
+    type: "upstream_comparison",
+    state: "paused",
+    distance_meters: 600,
+    evidence_gap: "Where does the visible foam begin?",
+    instructions:
+      "From a public path, observe the surface upstream. Record whether foam is visible; do not enter the water.",
+    safety_message:
+      "Paused after a strong-smell report. Do not approach this area.",
+  },
+  {
+    id: "demo-repeat",
+    incident_id: "demo-litter",
+    type: "repeat_observation",
+    state: "available",
+    distance_meters: 1400,
+    evidence_gap: "Is the litter still collecting at the bend?",
+    instructions:
+      "Take a wide photograph from the public footpath. Describe what you see and record the observation time.",
+    safety_message: "Stay on the public path. Do not touch or collect waste.",
+  },
+  {
+    id: "demo-comparison",
+    incident_id: "demo-flow",
+    type: "unaffected_comparison",
+    state: "available",
+    distance_meters: 2300,
+    evidence_gap: "Does the low flow extend to the next reach?",
+    instructions:
+      "Observe the stream from the marked public bridge. A photograph of an unaffected reach is useful evidence too.",
+    safety_message:
+      "Keep behind the bridge railing. Skip the mission if access feels unsafe.",
+  },
 ];
 export const demoIncidents: Incident[] = [
-  { id: "demo-foam", title: "A little foam. A bigger question.", category: "foam", location_label: "Millbrook · Footbridge reach", evidence_status: "expert_review_recommended", safety_state: "missions_paused", is_demo: true, updated_at: "2026-09-22T10:25:00+05:30", distance: 0.6, location: { coordinates: [77.595, 12.975] }, observations: demoObservations, missions: [demoMissions[0]], assessments: [{ state: "completed", result: { summary: { text: "Independent observations show foam at the bridge and downstream, with no visible foam at the upstream viewpoint. A repeat observation suggests it persisted for at least an hour. The source and composition remain unknown." }, observedFeatures: [{ text: "Foam observed at two separate viewpoints." }, { text: "The condition remained visible after one hour." }, { text: "The upstream comparison did not show visible foam." }], missingEvidence: ["The source and composition of the foam.", "Whether natural organic matter or another source explains it.", "An expert interpretation of the observations."], contradictions: [{ text: "The clear upstream observation limits the apparent extent. It does not disprove the downstream reports." }], possibleExplanations: [{ text: "Foam can have different causes. These images and reports cannot establish which explanation applies." }] } }] },
-  { id: "demo-litter", title: "Litter gathering at the bend", category: "litter", location_label: "Willow stream · East bend", evidence_status: "needs_verification", safety_state: "normal", is_demo: true, distance: 1.4, updated_at: "2026-09-22T08:30:00+05:30", location: { coordinates: [77.608, 12.969] }, observations: [], missions: [demoMissions[1]] },
-  { id: "demo-flow", title: "A quieter reach than usual", category: "flow", location_label: "Cedar brook · North trail", evidence_status: "early_signal", safety_state: "normal", is_demo: true, distance: 2.3, updated_at: "2026-09-21T16:30:00+05:30", location: { coordinates: [77.583, 12.986] }, observations: [], missions: [demoMissions[2]] },
+  {
+    id: "demo-foam",
+    title: "A little foam. A bigger question.",
+    category: "foam",
+    location_label: "Millbrook · Footbridge reach",
+    evidence_status: "expert_review_recommended",
+    safety_state: "missions_paused",
+    is_demo: true,
+    updated_at: "2026-09-22T10:25:00+05:30",
+    distance: 0.6,
+    location: { coordinates: [77.595, 12.975] },
+    observations: demoObservations,
+    missions: [demoMissions[0]],
+    assessments: [
+      {
+        state: "completed",
+        result: {
+          summary: {
+            text: "Independent observations show foam at the bridge and downstream, with no visible foam at the upstream viewpoint. A repeat observation suggests it persisted for at least an hour. The source and composition remain unknown.",
+          },
+          observedFeatures: [
+            { text: "Foam observed at two separate viewpoints." },
+            { text: "The condition remained visible after one hour." },
+            { text: "The upstream comparison did not show visible foam." },
+          ],
+          missingEvidence: [
+            "The source and composition of the foam.",
+            "Whether natural organic matter or another source explains it.",
+            "An expert interpretation of the observations.",
+          ],
+          contradictions: [
+            {
+              text: "The clear upstream observation limits the apparent extent. It does not disprove the downstream reports.",
+            },
+          ],
+          possibleExplanations: [
+            {
+              text: "Foam can have different causes. These images and reports cannot establish which explanation applies.",
+            },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: "demo-litter",
+    title: "Litter gathering at the bend",
+    category: "litter",
+    location_label: "Willow stream · East bend",
+    evidence_status: "needs_verification",
+    safety_state: "normal",
+    is_demo: true,
+    distance: 1.4,
+    updated_at: "2026-09-22T08:30:00+05:30",
+    location: { coordinates: [77.608, 12.969] },
+    observations: [],
+    missions: [demoMissions[1]],
+  },
+  {
+    id: "demo-flow",
+    title: "A quieter reach than usual",
+    category: "flow",
+    location_label: "Cedar brook · North trail",
+    evidence_status: "early_signal",
+    safety_state: "normal",
+    is_demo: true,
+    distance: 2.3,
+    updated_at: "2026-09-21T16:30:00+05:30",
+    location: { coordinates: [77.583, 12.986] },
+    observations: [],
+    missions: [demoMissions[2]],
+  },
 ];
-export function titleOf(i: Incident) { return i.title ?? `${i.category.charAt(0).toUpperCase()}${i.category.slice(1)} observation`; }
-export function humanize(text: string) { return text.replaceAll("_", " "); }
-export function dateLabel(value: string) { return new Date(value).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); }
+export function titleOf(i: Incident) {
+  return (
+    i.title ??
+    `${i.category.charAt(0).toUpperCase()}${i.category.slice(1)} observation`
+  );
+}
+export function humanize(text: string) {
+  return text.replaceAll("_", " ");
+}
+export function dateLabel(value: string) {
+  return new Date(value).toLocaleString("en-IN", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}

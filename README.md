@@ -4,6 +4,8 @@ AquaRelay turns uncertain citizen observations about urban streams into structur
 
 See [PLAN.md](./PLAN.md) for the product and technical plan.
 
+The frontend includes a photographic landing page, investigation explorer, guided reporting, evidence timeline, verification missions, participant impact and reviewer workspace. See [the frontend guide](./docs/frontend.md) for demo/live modes and a four-minute presentation walkthrough.
+
 ## Development
 
 ```bash
