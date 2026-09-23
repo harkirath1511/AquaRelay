@@ -32,12 +32,14 @@ export function post<T>(url: string, body: unknown, key?: string) {
 export interface UploadProgress {
   intent?: { mediaId: string; signedUrl: string };
   uploaded?: boolean;
+  completed?: boolean;
 }
 export async function uploadPhoto(
   file: File,
   observationId: string,
   progress: UploadProgress = {},
 ) {
+  if (progress.completed) return;
   const digest = await crypto.subtle.digest(
     "SHA-256",
     await file.arrayBuffer(),
@@ -68,4 +70,5 @@ export async function uploadPhoto(
     progress.uploaded = true;
   }
   await post(`/api/uploads/${progress.intent.mediaId}/complete`, {});
+  progress.completed = true;
 }

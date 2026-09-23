@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AccountPage } from "./account";
+import { AdminPage } from "./admin";
 import { incidentCategories } from "@/domain/model";
 import { api, post } from "./api";
 import {
@@ -43,8 +44,9 @@ function WorkspaceContent({ path }: { path: string[] }) {
   const query = useSearchParams(),
     router = useRouter(),
     page = path[0];
-  const demo = query.get("mode") !== "live",
+  const demo = !["account", "admin"].includes(page) && query.get("mode") !== "live",
     id = path[1];
+  const reviewIncident = query.get("incident");
   const [incidents, setIncidents] = useState<Incident[]>(
       demo
         ? page === "investigations"
@@ -68,7 +70,7 @@ function WorkspaceContent({ path }: { path: string[] }) {
     if (!["explore", "investigations", "review"].includes(page)) return;
     const url =
       page === "review"
-        ? "/api/reviews"
+        ? `/api/reviews${reviewIncident ? `?incident=${encodeURIComponent(reviewIncident)}` : ""}`
         : page === "investigations"
           ? `/api/incidents/${id}`
           : "/api/incidents?limit=20";
@@ -86,10 +88,10 @@ function WorkspaceContent({ path }: { path: string[] }) {
     return () => {
       active = false;
     };
-  }, [demo, page, id, revision]);
+  }, [demo, page, id, revision, reviewIncident]);
   function changeMode() {
     router.push(
-      `/${page === "investigations" ? "explore" : path.join("/")}${demo ? "?mode=live" : ""}`,
+      `/${["investigations", "account", "admin"].includes(page) ? "explore" : path.join("/")}${demo ? "?mode=live" : ""}`,
     );
   }
   const known = [
@@ -100,6 +102,7 @@ function WorkspaceContent({ path }: { path: string[] }) {
     "impact",
     "review",
     "account",
+    "admin",
   ].includes(page);
   return (
     <>
@@ -147,7 +150,7 @@ function WorkspaceContent({ path }: { path: string[] }) {
             refresh={refresh}
           />
         ) : (
-          <AccountPage />
+          page === "admin" ? <AdminPage /> : <AccountPage />
         )}
       </main>
     </>

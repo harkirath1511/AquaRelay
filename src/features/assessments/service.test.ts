@@ -50,6 +50,17 @@ function setup(providerResult: AssessmentResult = result) {
 }
 
 describe("AssessmentService", () => {
+  it("records provider outages without completing or discarding evidence", async () => {
+    const { repository, provider, service } = setup();
+    vi.mocked(provider.assess).mockRejectedValue(new Error("Provider unavailable"));
+    await expect(service.assess("incident-id", "user-id")).rejects.toThrow("Provider unavailable");
+    expect(repository.fail).toHaveBeenCalledWith(
+      { assessmentId: "assessment-id", evidenceRevision: 2 }, "assessment_failed",
+    );
+    expect(repository.complete).not.toHaveBeenCalled();
+    expect(evidence.observations).toHaveLength(1);
+  });
+
   it("validates, evaluates, and persists a provider result", async () => {
     const { repository, service } = setup();
     const response = await service.assess("incident-id", "user-id");

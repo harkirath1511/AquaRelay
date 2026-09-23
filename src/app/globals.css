@@ -3391,3 +3391,23 @@ hr {
 }
 .map-missions-link { position: absolute; left: 22px; top: 78px; background: #fbfcf5; border: 1px solid #cdd9c5; border-radius: 6px; padding: 10px 13px; display: flex; gap: 7px; align-items: center; font-size: 11px; z-index: 3; min-height: 44px; }
 @media(max-width:600px) { .map-missions-link { left: 13px; top: 65px; font-size: 10px; } }
+.account-link { font-size: 11px; max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 12px 0; }
+.account-options { display:flex; gap:18px; flex-wrap:wrap; margin-bottom:20px; }
+.account-options button { background:none; border:0; padding:8px 0; }
+.admin-incident { display:flex; gap:20px; justify-content:space-between; padding:20px 0; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+.admin-incident small, .history-row small { overflow-wrap:anywhere; }
+.content-page > .card { margin-bottom:24px; }
+@media(max-width:600px) { .account-link { max-width:75px; font-size:10px; } .header-actions { gap:8px; } }
+.leaflet-host { position:absolute; inset:0; z-index:0; }
+.live-map .map-legend { z-index:401; bottom:24px; max-width:70%; }
+.live-point, .live-cluster { background:#215a47; color:white; border:3px solid white; border-radius:50%; display:grid; place-items:center; box-shadow:0 2px 8px #173b3b44; font:600 15px Arial; }
+.live-point.active { background:#704d87; outline:7px solid #704d8740; }
+.live-cluster { background:#163d48; }
+.map-cluster-list { display:grid; gap:8px; max-height:260px; overflow:auto; }
+.map-cluster-list button { text-align:left; background:#eef3e9; border:1px solid #d8e1d1; border-radius:4px; padding:8px; }
+.live-map-message { position:absolute; z-index:401; top:12px; left:60px; background:white; border:1px solid var(--line); border-radius:5px; padding:10px; font-size:12px; max-width:70%; }
+.live-map-message.warning { background:#fff5df; }.live-map-message button { display:block; background:none; border:0; text-decoration:underline; }
+.map-empty { position:absolute; z-index:401; background:#fffffff2; padding:25px; left:15%; right:15%; top:30%; border-radius:8px; text-align:center; }
+.map-fit { position:absolute; z-index:401; right:14px; top:14px; background:white; border:1px solid var(--line); border-radius:5px; padding:8px 13px; }
+.explorer-map .map-detail { z-index:450; }.explorer-map .map-missions-link { z-index:401; top:100px; }
+@media(max-width:600px) { .live-map .map-legend { font-size:9px; max-width:90%; } .map-empty { left:12%; right:12%; } }

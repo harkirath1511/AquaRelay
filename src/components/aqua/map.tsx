@@ -3,8 +3,13 @@
 import { useState } from "react";
 import { type Incident, titleOf } from "./data";
 import { Icon } from "./ui";
+import { LiveMap } from "./live-map";
 
-export function EvidenceMap({
+export function EvidenceMap(props: { incidents: Incident[]; selected?:string; onSelect:(id:string)=>void; demo:boolean; evidence?:boolean }) {
+  return props.demo ? <DemoEvidenceMap {...props}/> : <LiveMap {...props}/>;
+}
+
+function DemoEvidenceMap({
   incidents,
   selected,
   onSelect,

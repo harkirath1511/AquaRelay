@@ -1,0 +1,13 @@
+import { beforeEach,expect,it,vi } from "vitest";
+const mocks=vi.hoisted(()=>({admin:vi.fn(),server:vi.fn(),rpc:vi.fn()}));
+vi.mock("@/lib/auth/require-user",async original=>({...await original<typeof import("@/lib/auth/require-user")>(),requireAdmin:mocks.admin}));
+vi.mock("@/lib/supabase/server",()=>({createSupabaseServerClient:mocks.server}));
+import { AuthorizationError } from "@/lib/auth/require-user";
+import { POST } from "./route";
+const actor="11111111-1111-4111-8111-111111111111",target="22222222-2222-4222-8222-222222222222";
+const request=(body:unknown)=>new Request("http://localhost/api/admin",{method:"POST",body:JSON.stringify(body)});
+beforeEach(()=>{vi.clearAllMocks();mocks.admin.mockResolvedValue({id:actor});mocks.server.mockResolvedValue({rpc:mocks.rpc});mocks.rpc.mockResolvedValue({error:null});});
+it("never calls role mutation without administrator authorisation",async()=>{mocks.admin.mockRejectedValue(new AuthorizationError());const r=await POST(request({action:"role",userId:target,role:"admin",reason:"Approved account role change"}));expect(r.status).toBe(403);expect(mocks.server).not.toHaveBeenCalled();});
+it("rejects self-role mutation",async()=>{const r=await POST(request({action:"role",userId:actor,role:"participant",reason:"Changing own access privileges"}));expect(r.status).toBe(400);expect(mocks.rpc).not.toHaveBeenCalled();});
+it("uses the session RPC so database permissions and audit apply",async()=>{const r=await POST(request({action:"role",userId:target,role:"reviewer",reason:"Approved trained stream reviewer"}));expect(r.status).toBe(200);expect(mocks.rpc).toHaveBeenCalledWith("admin_change_role",{p_user_id:target,p_role:"reviewer",p_reason:"Approved trained stream reviewer"});});
+it("records an explicit reason when pausing missions",async()=>{const r=await POST(request({action:"pause",incidentId:target,reason:"Unsafe access reported by coordinator"}));expect(r.status).toBe(200);expect(mocks.rpc).toHaveBeenCalledWith("admin_pause_incident",{p_incident_id:target,p_reason:"Unsafe access reported by coordinator"});});

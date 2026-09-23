@@ -251,7 +251,7 @@ export function ErrorState({
       </h2>
       <p>
         {denied
-          ? "Sign in with an authorised account to access live data. Reviewer actions require a reviewer role."
+          ? "Sign in with an authorised account to access live data. Reviewer and administrator workspaces require the corresponding role."
           : error.message}
       </p>
       <div className="actions">

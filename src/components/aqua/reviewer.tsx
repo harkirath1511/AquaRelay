@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useState } from "react";
+import { missionTypes, type MissionType } from "@/domain/model";
 import {
   type Incident,
   demoIncidents,
@@ -51,6 +52,7 @@ export function Reviewer({
   const [decision, setDecision] = useState("request_more_evidence"),
     [explanation, setExplanation] = useState(""),
     [message, setMessage] = useState("");
+  const [requestedMissions, setRequestedMissions] = useState<MissionType[]>([]);
   const [tab, setTab] = useState("Evidence"),
     [exact, setExact] = useState<
       | {
@@ -117,12 +119,18 @@ export function Reviewer({
         await post(`/api/incidents/${selected}/reviews`, {
           decision,
           explanation,
+          requestedMissionTypes:
+            decision === "request_more_evidence" &&
+            incident?.safety_state !== "missions_paused"
+              ? requestedMissions
+              : [],
         });
         setMessage("Decision saved to the incident record.");
         setRevision((x) => x + 1);
         refresh();
       }
       setExplanation("");
+      setRequestedMissions([]);
     } catch (e) {
       setMessage(
         e instanceof Error ? e.message : "Decision could not be saved",
@@ -192,6 +200,7 @@ export function Reviewer({
               setSelected(i.id);
               setMessage("");
               setExplanation("");
+              setRequestedMissions([]);
               setExact(null);
               setError(null);
               setDetail(
@@ -239,6 +248,16 @@ export function Reviewer({
               <button className="button secondary small" onClick={exportReport}>
                 Export report ↗
               </button>
+              {!demo && (
+                <a
+                  className="button secondary small"
+                  href={`/api/incidents/${selected}/report`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Print-friendly report ↗
+                </a>
+              )}
             </div>
             <Badge status={incident.evidence_status} />
             <Safety
@@ -444,6 +463,42 @@ export function Reviewer({
                   </label>
                 ))}
               </div>
+              {!demo && decision === "request_more_evidence" && (
+                <fieldset
+                  disabled={busy || incident.safety_state === "missions_paused"}
+                >
+                  <legend>Approved follow-up missions (up to three)</legend>
+                  <p className="field-help">
+                    {incident.safety_state === "missions_paused"
+                      ? "Field missions remain paused for safety. You can still record a request and reasoning."
+                      : "Choose the evidence gaps to address. Existing open missions are reused; new missions use approved safety instructions."}
+                  </p>
+                  <div className="checks">
+                    {missionTypes.map((type) => (
+                      <label key={type}>
+                        <input
+                          type="checkbox"
+                          checked={requestedMissions.includes(type)}
+                          disabled={
+                            !requestedMissions.includes(type) &&
+                            requestedMissions.length >= 3
+                          }
+                          onChange={(e) =>
+                            setRequestedMissions(
+                              e.target.checked
+                                ? [...requestedMissions, type]
+                                : requestedMissions.filter(
+                                    (value) => value !== type,
+                                  ),
+                            )
+                          }
+                        />
+                        {humanize(type)}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              )}
               <label>
                 Reasoning and next steps
                 <textarea

@@ -39,6 +39,9 @@ it("retries finalization without creating another media record or re-uploading",
     "Temporary error",
   );
   await uploadPhoto(photo, "observation-1", checkpoint);
+  // Retrying a later photo in the same submission must skip this completed one.
+  await uploadPhoto(photo, "observation-1", checkpoint);
+  expect(checkpoint.completed).toBe(true);
   expect(fetcher.mock.calls.map((c) => c[0])).toEqual([
     "/api/uploads",
     "https://example.test/signed-upload",

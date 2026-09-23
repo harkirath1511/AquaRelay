@@ -35,8 +35,8 @@ export function Report({
   const [description, setDescription] = useState("");
   const [visible, setVisible] = useState("yes"),
     [persists, setPersists] = useState("unknown");
-  const [photo, setPhoto] = useState<File | null>(null),
-    [preview, setPreview] = useState("");
+  const [photos, setPhotos] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [latitude, setLatitude] = useState(""),
     [longitude, setLongitude] = useState("");
   const [accuracy, setAccuracy] = useState<number | null>(null),
@@ -52,13 +52,14 @@ export function Report({
   const [saved, setSaved] = useState<SubmissionResult | null>(null);
   const key = useRef("");
   const heading = useRef<HTMLHeadingElement>(null);
-  const uploadProgress = useRef<UploadProgress>({});
+  const uploadProgress = useRef<UploadProgress[]>([]);
+  const persisted = useRef<SubmissionResult | null>(null);
   const capturedAt = useRef("");
   useEffect(
     () => () => {
-      if (preview) URL.revokeObjectURL(preview);
+      previews.forEach((preview) => URL.revokeObjectURL(preview));
     },
-    [preview],
+    [previews],
   );
   function next() {
     setError("");
@@ -162,12 +163,19 @@ export function Report({
           key.current,
         ));
       setSaved(result);
-      if (photo)
-        await uploadPhoto(photo, result.observationId, uploadProgress.current);
+      persisted.current = result;
+      for (const [index, photo] of photos.entries()) {
+        uploadProgress.current[index] ??= {};
+        await uploadPhoto(
+          photo,
+          result.observationId,
+          uploadProgress.current[index],
+        );
+      }
       setDone(true);
     } catch (e) {
       setError(
-        `${saved ? "Your observation is saved; its photo still needs to finish. " : ""}${e instanceof Error ? e.message : "Submission failed"}`,
+        `${persisted.current ? "Your observation is saved; some photos still need to finish. " : ""}${e instanceof Error ? e.message : "Submission failed"}`,
       );
     } finally {
       setBusy(false);
@@ -283,48 +291,61 @@ export function Report({
             <>
               <label className="upload-zone">
                 <Icon name="camera" size={30} />
-                <strong>{photo ? photo.name : "Add a photograph"}</strong>
-                <span>JPEG, PNG or WebP · up to 10 MB · optional</span>
+                <strong>
+                  {photos.length
+                    ? `${photos.length} photographs selected`
+                    : "Add photographs"}
+                </strong>
+                <span>
+                  Up to 3 JPEG, PNG or WebP images · 10 MB each · optional
+                </span>
                 <input
                   type="file"
+                  multiple
                   accept="image/jpeg,image/png,image/webp"
                   onChange={(e) => {
-                    const f = e.target.files?.[0];
+                    const files = Array.from(e.target.files ?? []);
                     if (
-                      f &&
-                      (f.size > 10485760 ||
-                        !["image/jpeg", "image/png", "image/webp"].includes(
-                          f.type,
-                        ))
+                      files.length > 3 ||
+                      files.some(
+                        (f) =>
+                          f.size > 10485760 ||
+                          !["image/jpeg", "image/png", "image/webp"].includes(
+                            f.type,
+                          ),
+                      )
                     ) {
                       setError(
-                        "Choose a JPEG, PNG or WebP image no larger than 10 MB.",
+                        "Choose up to three JPEG, PNG or WebP images, each no larger than 10 MB.",
                       );
                       e.target.value = "";
                       return;
                     }
                     setError("");
-                    setPhoto(f ?? null);
-                    setPreview(f ? URL.createObjectURL(f) : "");
+                    setPhotos(files);
+                    setPreviews(files.map((f) => URL.createObjectURL(f)));
+                    uploadProgress.current = [];
                   }}
                 />
               </label>
-              {photo && (
-                <div className="photo-preview">
+              {photos.map((photo, index) => (
+                <div className="photo-preview" key={`${photo.name}-${index}`}>
                   <img
-                    src={preview}
-                    alt="Your selected observation photograph"
+                    src={previews[index]}
+                    alt={`Selected observation photograph ${index + 1}: ${photo.name}`}
                   />
                   <button
                     onClick={() => {
-                      setPhoto(null);
-                      setPreview("");
+                      const remaining = photos.filter((_, i) => i !== index);
+                      setPhotos(remaining);
+                      setPreviews(remaining.map((f) => URL.createObjectURL(f)));
+                      uploadProgress.current = [];
                     }}
                   >
-                    Remove photo
+                    Remove photo {index + 1}
                   </button>
                 </div>
-              )}
+              ))}
               <p className="field-help">
                 A wide view adds context. Avoid faces and identifying details.
                 Location metadata is removed by the upload service.
@@ -516,8 +537,11 @@ export function Report({
                 <dd>{humanize(category)}</dd>
                 <dt>Description</dt>
                 <dd>{description}</dd>
-                <dt>Photo</dt>
-                <dd>{photo?.name ?? "No photo attached"}</dd>
+                <dt>Photos</dt>
+                <dd>
+                  {photos.map((photo) => photo.name).join(", ") ||
+                    "No photos attached"}
+                </dd>
                 <dt>Area</dt>
                 <dd>
                   {demo

@@ -5,6 +5,7 @@ import { MissionService } from "@/features/missions/service";
 import { requireUser } from "@/lib/auth/require-user";
 import { errorResponse } from "@/lib/http/respond";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { scheduleAssessment } from "@/features/assessments/run";
 
 export async function POST(
   request: Request,
@@ -22,6 +23,7 @@ export async function POST(
       idempotencyKey,
       body,
     );
+    if (!result.replayed) scheduleAssessment(supabase, result.incidentId, user.id);
     return NextResponse.json(result, { status: result.replayed ? 200 : 201 });
   } catch (error) {
     return errorResponse(error);
