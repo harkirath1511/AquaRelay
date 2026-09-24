@@ -153,17 +153,22 @@ export function Investigation({
                   </div>
                   {result ? (
                     <>
-                      <h2>A clearer picture. Still an open question.</h2>
-                      <p>{result.summary?.text}</p>
+                      <h2>{result.assessmentMode === "text_only" ? "Text-only assessment" : result.assessmentMode === "vision" ? "Evidence summary" : "Earlier assessment — image provenance unavailable"}</h2>
+                      {result.assessmentMode === "text_only" && <p>Photos were not inspected by the AI. The participant&apos;s report remains unverified by an image.</p>}
+                      <p>{result.assessmentMode ? result.summary?.text : "This earlier assessment did not record whether photos were inspected. Review the original report and images before relying on its claims."}</p>
+                      {result.imageReviews?.map((review) => <p className="assessment-note" key={review.mediaId}>
+                        Photo {review.mediaId.slice(0, 8)}: {review.status.replaceAll("_", " ")} — {review.reason}
+                      </p>)}
                       <div className="knowledge-grid">
                         <div>
-                          <h3>
-                            <span>✓</span> What we know
-                          </h3>
+                          <h3>Reported by participant</h3>
+                          <ul>{result.reportedFeatures?.map((f, n) => <li key={n}>{f.text}</li>)}</ul>
+                          <h3>Visually observed in inspected photo</h3>
                           <ul>
-                            {result.observedFeatures?.map((f, n) => (
+                            {result.assessmentMode === "vision" && result.observedFeatures?.map((f, n) => (
                               <li key={n}>{f.text}</li>
                             ))}
+                            {(result.assessmentMode !== "vision" || !result.observedFeatures?.length) && <li>No relevant visual finding verified.</li>}
                           </ul>
                         </div>
                         <div>
@@ -177,7 +182,8 @@ export function Investigation({
                           </ul>
                         </div>
                       </div>
-                      {result.possibleExplanations?.map((f, n) => (
+                      {result.assessmentMode === "vision" && !!result.possibleExplanations?.length && <h3>Possible explanations — unverified</h3>}
+                      {result.assessmentMode === "vision" && result.possibleExplanations?.map((f, n) => (
                         <p className="assessment-note" key={n}>
                           {f.text}
                         </p>

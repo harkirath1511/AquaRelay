@@ -24,6 +24,9 @@ const evidence: AssessmentEvidence = {
   }],
 };
 const result: AssessmentResult = {
+  assessmentMode: "text_only",
+  imageReviews: [],
+  reportedFeatures: [{ text: "White foam was reported", evidenceReferences: [observationId] }],
   observedFeatures: [{ text: "White foam was reported", evidenceReferences: [observationId] }],
   qualityIssues: [],
   missingEvidence: ["Upstream comparison"],

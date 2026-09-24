@@ -36,5 +36,7 @@ liveTest("assesses synthetic text and image evidence with the live Groq API", as
   const result = await provider.assess(evidence);
   expect(result.summary.text.length).toBeGreaterThan(0);
   expect(Array.isArray(result.safetyFlags)).toBe(true);
-  expect(["qwen/qwen3.8-27b", "openai/gpt-oss-20b"]).toContain(provider.modelName);
+  expect(result.observedFeatures).toEqual([]);
+  expect(result.imageReviews[0]?.status).not.toBe("relevant");
+  expect(provider.modelName).toBe("qwen/qwen3.8-27b");
 }, 90_000);

@@ -19,7 +19,8 @@ export class AssessmentService {
       }
 
       const result = assessmentResultSchema.parse(await this.provider.assess(evidence));
-      this.assertReferencesExist(result, new Set(evidence.observations.map(({ id }) => id)));
+      this.assertReferencesExist(result, new Set(evidence.observations.map(({ id }) => id)),
+        new Set(evidence.observations.flatMap((observation) => observation.media.map((media) => media.id))));
       const decision = evaluateEvidence(evidence, result);
       await this.repository.complete(claim, result, decision, this.provider);
       return { assessmentId: claim.assessmentId, evidenceRevision: claim.evidenceRevision, result, decision };
@@ -29,8 +30,9 @@ export class AssessmentService {
     }
   }
 
-  private assertReferencesExist(result: ReturnType<typeof assessmentResultSchema.parse>, ids: Set<string>) {
+  private assertReferencesExist(result: ReturnType<typeof assessmentResultSchema.parse>, ids: Set<string>, mediaIds: Set<string>) {
     const linked = [
+      ...result.reportedFeatures,
       ...result.observedFeatures,
       ...result.qualityIssues,
       ...result.possibleExplanations,
@@ -39,6 +41,9 @@ export class AssessmentService {
     ];
     if (linked.some((item) => item.evidenceReferences.some((id) => !ids.has(id)))) {
       throw new Error("Assessment contains an unknown evidence reference");
+    }
+    if (result.imageReviews.some((review) => !mediaIds.has(review.mediaId))) {
+      throw new Error("Assessment contains an unknown image reference");
     }
   }
 

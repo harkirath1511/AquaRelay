@@ -111,6 +111,8 @@ Submission endpoints accept idempotency keys. Shared Zod schemas define request 
 
 AI may describe visible features with uncertainty, identify missing information and contradictions, suggest mission types from the approved catalogue, and draft an evidence-linked summary. It must not identify a pollutant, assert a source, declare water safe, approve hazardous missions, or close a case.
 
+Assessment results separate participant-reported statements from features observed in an inspected, relevant photo. Each inspected photo receives a relevance status. Unrelated, ambiguous, unusable, or uninspected images supply no visual findings; text-only fallback is labelled and asks for a relevant photo or human review. Speculative causes are never promoted to findings, and serious reported hazards still trigger immediate review independently of image relevance.
+
 Deterministic application rules control workflow status:
 
 - A submitted observation begins as an early signal.

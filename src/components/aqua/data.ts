@@ -53,6 +53,9 @@ export interface Assessment {
   state: string;
   completed_at?: string;
   result?: {
+    assessmentMode?: "vision" | "text_only";
+    imageReviews?: { mediaId: string; status: string; reason: string }[];
+    reportedFeatures?: { text: string }[];
     summary?: { text: string };
     observedFeatures?: { text: string }[];
     missingEvidence?: string[];

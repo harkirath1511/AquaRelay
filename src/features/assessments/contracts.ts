@@ -10,6 +10,13 @@ const evidenceLinkedTextSchema = z.object({
 });
 
 export const assessmentResultSchema = z.object({
+  assessmentMode: z.enum(["vision", "text_only"]),
+  imageReviews: z.array(z.object({
+    mediaId: z.string().min(1),
+    status: z.enum(["relevant", "unrelated", "ambiguous", "unusable", "not_inspected"]),
+    reason: z.string().trim().min(1).max(500).transform(redactLocationText),
+  })).max(3),
+  reportedFeatures: z.array(evidenceLinkedTextSchema).max(20),
   observedFeatures: z.array(evidenceLinkedTextSchema).max(20),
   qualityIssues: z.array(evidenceLinkedTextSchema).max(20),
   missingEvidence: z.array(z.string().trim().min(1).max(500).transform(redactLocationText)).max(20),

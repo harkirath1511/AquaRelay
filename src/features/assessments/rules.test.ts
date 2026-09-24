@@ -26,6 +26,9 @@ const baseEvidence: AssessmentEvidence = {
   ],
 };
 const baseAssessment: AssessmentResult = {
+  assessmentMode: "text_only",
+  imageReviews: [],
+  reportedFeatures: [{ text: "White foam was reported", evidenceReferences: [observationId] }],
   observedFeatures: [{ text: "White material was reported", evidenceReferences: [observationId] }],
   qualityIssues: [],
   missingEvidence: ["An upstream comparison is missing"],
@@ -52,6 +55,19 @@ describe("evaluateEvidence", () => {
     const decision = evaluateEvidence(baseEvidence, {
       ...baseAssessment,
       safetyFlags: ["strong_fumes"],
+    });
+    expect(decision.status).toBe("expert_review_recommended");
+    expect(decision.pauseMissions).toBe(true);
+  });
+
+  it("routes a reported serious hazard even when the image is unrelated and the assessment is text only", () => {
+    const evidence = { ...baseEvidence, observations: [{ ...baseEvidence.observations[0], safetyFlags: ["strong_fumes"] }] };
+    const decision = evaluateEvidence(evidence, {
+      ...baseAssessment,
+      imageReviews: [{ mediaId: "photo", status: "unrelated", reason: "No stream is visible." }],
+      observedFeatures: [],
+      possibleExplanations: [],
+      safetyFlags: [],
     });
     expect(decision.status).toBe("expert_review_recommended");
     expect(decision.pauseMissions).toBe(true);

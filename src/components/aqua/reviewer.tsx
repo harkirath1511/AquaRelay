@@ -424,10 +424,13 @@ export function Reviewer({
                   incident.assessments.map((a, n) => (
                     <div className="history-row" key={a.id ?? n}>
                       <strong>
-                        Assessment {n + 1} · {humanize(a.state)}
+                        Assessment {n + 1} · {humanize(a.state)}{a.result?.assessmentMode === "text_only" ? " · text only; photos uninspected" : a.result && !a.result.assessmentMode ? " · image provenance unavailable" : ""}
                       </strong>
+                      {a.result?.imageReviews?.map((review) => <p key={review.mediaId}>
+                        Photo {review.mediaId.slice(0, 8)}: {humanize(review.status)} — {review.reason}
+                      </p>)}
                       <p>
-                        {a.result?.summary?.text ??
+                        {(a.result?.assessmentMode ? a.result?.summary?.text : null) ??
                           "No completed summary. Evidence remains available for manual review."}
                       </p>
                       {a.completed_at && (
