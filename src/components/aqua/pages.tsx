@@ -14,10 +14,10 @@ export function Landing() {
           <HeroGlobe />
           <div className="hero-content">
             <div className="eyebrow light">
-              <span className="dot" /> FOR THE WATER WE SHARE
+              <span className="dot" /> FOR THE PLACES WE SHARE
             </div>
             <h1>
-              Healthy streams
+              Healthier places
               <br />
               start with
               <br />
@@ -29,7 +29,7 @@ export function Landing() {
               Experts can act.
             </p>
             <p className="hero-description">
-              Turn what you notice in your local stream into evidence
+              Turn what you notice in your environment into evidence
               <br className="desktop" /> that helps people understand what’s
               happening.
             </p>
@@ -50,7 +50,7 @@ export function Landing() {
             <span>LOOK CLOSER. UNDERSTAND TOGETHER.</span>
             <span>DRAG TO EXPLORE THE GLOBE</span>
           </div>
-          <div className="hero-index">EVERY STREAM IS CONNECTED</div>
+          <div className="hero-index">EVERY PLACE HAS A STORY</div>
         </section>
         <section className="trust-strip">
           <span>
@@ -63,8 +63,27 @@ export function Landing() {
             <Icon name="pin" /> Your exact location stays private
           </span>
           <span>
-            <Icon name="leaf" /> Care for your local waterways
+            <Icon name="leaf" /> Care for your local environment
           </span>
+        </section>
+        <section className="environment-scope" aria-labelledby="environment-scope-title">
+          <div>
+            <div className="eyebrow">MORE THAN WATER</div>
+            <h2 id="environment-scope-title">Notice changes across your environment.</h2>
+            <p>Report what you can observe safely. Each report starts an investigation; people and reviewers help distinguish evidence from assumptions.</p>
+          </div>
+          <div className="environment-scope-grid">
+            {[
+              { icon: "eye", title: "Air & noise", detail: "Smoke, unusual odours or persistent noise." },
+              { icon: "leaf", title: "Land & habitat", detail: "Dumping, damaged vegetation or disturbed wildlife." },
+              { icon: "pin", title: "Soil & places", detail: "Contamination concerns or changing conditions on the ground." },
+              { icon: "water", title: "Waterways", detail: "Foam, discolouration, erosion or changing flow." },
+            ].map((area) => <article key={area.title}>
+              <span className="icon-disc"><Icon name={area.icon} /></span>
+              <h3>{area.title}</h3>
+              <p>{area.detail}</p>
+            </article>)}
+          </div>
         </section>
         <section className="section journey" id="how-it-works">
           <div className="section-heading">
@@ -88,7 +107,7 @@ export function Landing() {
                 n: "01",
                 icon: "eye",
                 title: "Notice something",
-                text: "Foam, a change in colour, an unusual smell. Share what you see from a safe place.",
+                text: "Litter, damaged habitat, unusual air, or a change in water. Share what you see from a safe place.",
               },
               {
                 n: "02",
@@ -170,7 +189,7 @@ export function Landing() {
           <div className="eyebrow">YOU DON’T NEED ALL THE ANSWERS</div>
           <h2>Just a moment of attention.</h2>
           <p>
-            A clear upstream photo. A safe return visit. An honest “I’m not
+            A clearer photo. A safe return visit. An honest “I’m not
             sure.”
             <br />
             Useful evidence comes in many forms.

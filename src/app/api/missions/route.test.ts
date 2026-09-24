@@ -6,6 +6,7 @@ vi.mock("@/lib/auth/require-user", async (importOriginal) => ({
 }));
 vi.mock("@/lib/supabase/admin", () => ({ createSupabaseAdminClient: mocks.admin }));
 vi.mock("@/lib/supabase/server", () => ({ createSupabaseServerClient: mocks.server }));
+vi.mock("@/features/missions/story", () => ({ attachMissionStories: vi.fn(async (_client, missions) => missions) }));
 import { GET, POST } from "./route";
 import { AuthenticationError } from "@/lib/auth/require-user";
 

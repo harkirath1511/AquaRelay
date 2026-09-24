@@ -33,6 +33,7 @@ export function Investigation({
   const observations = [...(i.observations ?? [])].sort(
     (a, b) => Date.parse(a.observed_at) - Date.parse(b.observed_at),
   );
+  const openMissions = (i.missions ?? []).filter((mission) => mission.state === "open" || mission.state === "available");
   async function assess(retryLegacy = false) {
     setBusy(true);
     setAssessmentError("");
@@ -62,7 +63,7 @@ export function Investigation({
           <h1>{titleOf(i)}</h1>
           <p>
             <Icon name="pin" size={16} />
-            {i.location_label || "Approximate stream area"}
+            {i.location_label || "Approximate area"}
             <span>Updated {dateLabel(i.updated_at)}</span>
           </p>
         </div>
@@ -222,8 +223,8 @@ export function Investigation({
                     </p>
                   )}
                   <p className="tiny muted">
-                    An evidence summary, not a pollution diagnosis or a
-                    statement that the water is safe.
+                    An evidence summary, not a diagnosis or a statement that
+                    the area is safe.
                   </p>
                 </div>
               </article>
@@ -336,7 +337,7 @@ export function Investigation({
                 evidence
               />
               <div className="card-body">
-                <h2>One stream. Several perspectives.</h2>
+                <h2>One place. Several perspectives.</h2>
                 <p>
                   Only approximate areas are shared publicly.{" "}
                   {demo &&
@@ -379,8 +380,11 @@ export function Investigation({
             <p>
               {i.safety_state !== "normal"
                 ? "A reviewer should assess the safety flag and evidence before any further field verification."
-                : "A useful comparison or a safe return visit can help close the next evidence gap."}
+                : openMissions.length
+                  ? `${openMissions.length} open verification ${openMissions.length === 1 ? "mission is" : "missions are"} linked to this investigation.`
+                  : "A reviewer or evidence assessment may identify a safe follow-up task. No open mission is linked to this investigation yet."}
             </p>
+            {openMissions.length > 0 && <ul>{openMissions.map((mission) => <li key={mission.id}>{humanize(mission.type)} · {mission.evidence_gap}</li>)}</ul>}
             <Link
               className="text-link"
               href={

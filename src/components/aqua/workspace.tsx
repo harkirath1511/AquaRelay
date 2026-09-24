@@ -24,6 +24,7 @@ import {
   DemoBanner,
   Empty,
   ErrorState,
+  Footer,
   Header,
   Icon,
   Loading,
@@ -33,6 +34,7 @@ import { EvidenceMap } from "./map";
 import { Investigation } from "./investigation";
 import { Report } from "./report";
 import { Reviewer } from "./reviewer";
+import { MissionCard } from "./mission-card";
 
 export function Workspace({ path }: { path: string[] }) {
   const query = useSearchParams();
@@ -153,6 +155,7 @@ function WorkspaceContent({ path }: { path: string[] }) {
           page === "admin" ? <AdminPage /> : <AccountPage />
         )}
       </main>
+      <Footer />
     </>
   );
 }
@@ -252,8 +255,8 @@ function Explorer({
     <>
       <div className="explorer-top">
         <div>
-          <div className="eyebrow">FOLLOW THE WATER. FOLLOW THE EVIDENCE.</div>
-          <h1>Every stream has a story.</h1>
+          <div className="eyebrow">FOLLOW THE EVIDENCE.</div>
+          <h1>Every place has a story.</h1>
           <p>
             Explore observations, understand the evidence, find a useful next
             step.
@@ -276,8 +279,8 @@ function Explorer({
         <label className="search-field">
           <Icon name="pin" size={18} />
           <input
-            aria-label="Search streams or investigations"
-            placeholder="Find a stream or investigation"
+            aria-label="Search places or investigations"
+            placeholder="Find a place or investigation"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -367,7 +370,7 @@ function Explorer({
               >
                 <div className="split">
                   <span className="category-label">
-                    <Icon name="water" size={17} />
+                    <Icon name={["wildlife", "litter", "illegal_dumping", "vegetation_loss", "habitat_damage", "soil_contamination"].includes(i.category) ? "leaf" : ["foam", "discolouration", "flow", "erosion"].includes(i.category) ? "water" : "eye"} size={17} />
                     {i.category}
                   </span>
                   {i.is_demo && <span className="demo-label">DEMO</span>}
@@ -375,7 +378,7 @@ function Explorer({
                 <h3>{titleOf(i)}</h3>
                 <p>
                   <Icon name="pin" size={13} />
-                  {i.location_label || "Approximate stream area"}
+                  {i.location_label || "Approximate area"}
                 </p>
                 <Badge status={i.evidence_status} />
                 <div className="incident-meta">
@@ -434,7 +437,7 @@ function Explorer({
                       src={
                         incident.id === "demo-foam" ? foamPhoto : naturePhoto
                       }
-                      alt="Illustrative demo stream image, not live incident evidence"
+                      alt="Illustrative demo image, not live incident evidence"
                     />
                     <span className="photo-label">
                       DEMO · ILLUSTRATIVE IMAGE
@@ -488,6 +491,10 @@ function distanceKm(a: number[], b: number[]) {
 
 function Missions({ demo }: { demo: boolean }) {
   const [missions, setMissions] = useState<Mission[]>(demo ? demoMissions : []),
+    [ownMissions, setOwnMissions] = useState<Mission[]>([]),
+    [ownLoading, setOwnLoading] = useState(!demo),
+    [ownError, setOwnError] = useState<Error | null>(null),
+    [ownRevision, setOwnRevision] = useState(0),
     [error, setError] = useState<Error | null>(null),
     [loading, setLoading] = useState(false),
     [searched, setSearched] = useState(demo);
@@ -495,6 +502,21 @@ function Missions({ demo }: { demo: boolean }) {
     [selected, setSelected] = useState<string | null>(null),
     [filter, setFilter] = useState("all"),
     [radius, setRadius] = useState("5000");
+  useEffect(() => {
+    if (demo) return;
+    let active = true;
+    api<{ missions: Mission[] }>("/api/me/missions")
+      .then((data) => {
+        if (active) setOwnMissions(data.missions);
+      })
+      .catch((cause) => {
+        if (active) setOwnError(cause as Error);
+      })
+      .finally(() => {
+        if (active) setOwnLoading(false);
+      });
+    return () => { active = false; };
+  }, [demo, ownRevision]);
   async function find() {
     setLoading(true);
     setError(null);
@@ -550,14 +572,14 @@ function Missions({ demo }: { demo: boolean }) {
           : m.state === "paused")) &&
       (m.distance_meters ?? 0) <= Number(radius),
   );
-  const mapped: Incident[] = filtered.map((m, n) => ({
+  const mapped: Incident[] = filtered.map((m) => ({
     id: m.id,
     title: humanize(m.type),
-    category: "flow",
+    category: (m.story?.category as Incident["category"]) ?? "other",
     evidence_status: "needs_verification",
     safety_state: m.state === "paused" ? "missions_paused" : "normal",
     location_label: demo
-      ? demoIncidents[n]?.location_label
+      ? demoIncidents.find((incident) => incident.id === m.incident_id)?.location_label ?? "Demo area"
       : "Approximate mission area",
     location: m.target_location,
     updated_at: new Date().toISOString(),
@@ -568,8 +590,25 @@ function Missions({ demo }: { demo: boolean }) {
       <div className="page-heading">
         <div className="eyebrow">SMALL TASKS. USEFUL EVIDENCE.</div>
         <h1>Help answer the next question.</h1>
-        <p>A comparison or a safe return visit can make the picture clearer.</p>
+        <p>Each mission answers a specific question in an environmental investigation. A report opens an investigation; a reviewer or evidence assessment identifies the follow-up task. Follow its history, then decide whether you can help safely.</p>
       </div>
+      {!demo && (ownLoading || ownError || ownMissions.length > 0) && (
+        <section className="own-missions" aria-labelledby="own-missions-title">
+          <div className="eyebrow">YOUR INVESTIGATIONS</div>
+          <h2 id="own-missions-title">Missions linked to your reports</h2>
+          <p>{ownMissions.length ? `${ownMissions.length} open ${ownMissions.length === 1 ? "mission" : "missions"} connected to observations you reported.` : "Checking investigations you reported…"} These may be outside your current area. Only visit a site from a safe public place.</p>
+          {ownLoading ? <Loading /> : ownError ? <ErrorState error={ownError} retry={() => {
+            setOwnError(null);
+            setOwnLoading(true);
+            setOwnRevision((current) => current + 1);
+          }} /> : (
+            <div className="mission-grid">
+              {ownMissions.map((mission) => <MissionCard mission={mission} key={mission.id} />)}
+            </div>
+          )}
+        </section>
+      )}
+      {!demo && <h2 className="nearby-missions-title">Find other missions near your device {searched ? `(${filtered.length})` : ""}</h2>}
       <div className="mission-toolbar">
         <div className="view-toggle">
           <button
@@ -629,79 +668,10 @@ function Missions({ demo }: { demo: boolean }) {
           <div className="mission-grid">
             {filtered
               .filter((m) => view !== "map" || !selected || m.id === selected)
-              .map((m, n) => (
-                <article className="mission-card card" key={m.id}>
-                  <div className="card-body">
-                    <div className="split">
-                      <span className="icon-disc">
-                        <Icon
-                          name={
-                            m.type === "repeat_observation" ? "clock" : "eye"
-                          }
-                        />
-                      </span>
-                      <span
-                        className={
-                          m.state === "paused"
-                            ? "paused-label"
-                            : "available-label"
-                        }
-                      >
-                        {m.state === "paused"
-                          ? "Paused for safety"
-                          : "Open mission"}
-                      </span>
-                    </div>
-                    <div className="eyebrow">
-                      {demo && "DEMO · "}
-                      {humanize(m.type).toUpperCase()}
-                    </div>
-                    <h2>{m.evidence_gap}</h2>
-                    <p className="mission-place">
-                      <Icon name="pin" size={16} />
-                      {demo
-                        ? (demoIncidents[n]?.location_label ??
-                          "Demo stream area")
-                        : "Approximate stream area"}
-                    </p>
-                    <div className="mission-facts">
-                      <span>
-                        ↗ ≈ {((m.distance_meters ?? 0) / 1000).toFixed(1)} km
-                      </span>
-                      <span>
-                        <Icon name="clock" size={15} />
-                        5–10 min estimate
-                      </span>
-                    </div>
-                    <h3>What to do</h3>
-                    <p>{m.instructions}</p>
-                    <h3>Why this matters</h3>
-                    <p>
-                      This contribution helps address a specific gap:{" "}
-                      {m.evidence_gap.toLowerCase()}
-                    </p>
-                    <div className="mission-safety">
-                      <Icon name="shield" size={18} />
-                      {m.safety_message}
-                    </div>
-                    {m.state === "paused" ? (
-                      <button className="button secondary" disabled>
-                        Paused · keep your distance
-                      </button>
-                    ) : (
-                      <Link
-                        className="button"
-                        href={`/report?mission=${m.id}${demo ? "&mode=demo" : ""}`}
-                      >
-                        Contribute an observation{" "}
-                        <Icon name="arrow" size={18} />
-                      </Link>
-                    )}
-                  </div>
-                </article>
-              ))}
+              .map((m) => <MissionCard mission={m} demo={demo} key={m.id}
+                locationLabel={demo ? demoIncidents.find((incident) => incident.id === m.incident_id)?.location_label : undefined} />)}
           </div>
-          {!filtered.length && <Empty title="No missions match this search" />}
+          {!filtered.length && <Empty title="No nearby missions match this search" />}
           <Safety />
         </>
       )}

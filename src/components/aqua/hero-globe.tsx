@@ -11,14 +11,14 @@ void main() {
 const fragmentShaderSource = `
 precision highp float;
 uniform sampler2D u_earth;
-uniform vec2 u_size;
+uniform vec2 u_center;
 uniform float u_radius;
 uniform float u_angle;
 uniform float u_tilt;
 const float PI = 3.141592653589793;
 
 void main() {
-  vec2 point = (gl_FragCoord.xy - u_size * 0.5) / u_radius;
+  vec2 point = (gl_FragCoord.xy - u_center) / u_radius;
   float distanceSquared = dot(point, point);
   if (distanceSquared > 1.0) discard;
 
@@ -41,8 +41,8 @@ void main() {
 
   float daylight = max(dot(vec3(point, depth),
     normalize(vec3(-0.42, 0.72, 0.9))), 0.0);
-  vec3 color = surface * (0.25 + daylight * 0.86);
-  color += vec3(0.075, 0.20, 0.19) * pow(1.0 - depth, 2.8);
+  vec3 color = surface * (0.61 + daylight * 0.39);
+  color += vec3(0.025, 0.08, 0.07) * pow(1.0 - depth, 2.8);
   float edge = 1.0 - smoothstep(0.985, 1.0, distanceSquared);
   gl_FragColor = vec4(color, edge);
 }`;
@@ -104,7 +104,7 @@ export function HeroGlobe() {
     const position = gl.getAttribLocation(program, "a_position");
     gl.enableVertexAttribArray(position);
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-    const sizeUniform = gl.getUniformLocation(program, "u_size");
+    const centerUniform = gl.getUniformLocation(program, "u_center");
     const radiusUniform = gl.getUniformLocation(program, "u_radius");
     const angleUniform = gl.getUniformLocation(program, "u_angle");
     const tiltUniform = gl.getUniformLocation(program, "u_tilt");
@@ -139,9 +139,11 @@ export function HeroGlobe() {
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
       const radius = width < 700
-        ? Math.min(width * 0.66, height * 0.48)
-        : Math.min(width * 0.41, height * 0.69);
-      gl.uniform2f(sizeUniform, pixelWidth, pixelHeight);
+        ? Math.min(width * 0.62, height * 0.28)
+        : Math.min(width * 0.37, height * 0.65);
+      gl.uniform2f(centerUniform,
+        (width < 700 ? width * 0.5 : width * 0.82) * ratio,
+        (width < 700 ? height * 0.23 : height * 0.5) * ratio);
       gl.uniform1f(radiusUniform, radius * ratio);
       gl.uniform1f(angleUniform, angle);
       gl.uniform1f(tiltUniform, tilt);
@@ -208,7 +210,7 @@ export function HeroGlobe() {
       container.classList.add("is-ready");
       restart();
     };
-    image.src = "/images/globe-texture.webp";
+    image.src = "/images/globe-texture-light.webp";
 
     const resizeObserver = new ResizeObserver(draw);
     resizeObserver.observe(container);

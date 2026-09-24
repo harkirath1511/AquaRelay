@@ -253,7 +253,7 @@ export function Reviewer({
           >
             <Badge status={i.evidence_status} />
             <strong>{titleOf(i)}</strong>
-            <span>{i.location_label ?? "Approximate stream area"}</span>
+            <span>{i.location_label ?? "Approximate area"}</span>
             <small>{dateLabel(i.updated_at)}</small>
             {i.safety_state !== "normal" && (
               <span className="danger-text">⚠ Safety flag</span>
@@ -562,7 +562,7 @@ export function Reviewer({
                 <Icon name="check" />
               </button>
             </section>
-            {!demo && <section className="decision-panel card card-body">
+            {!demo && incident.stream_id && <section className="decision-panel card card-body">
               <div className="eyebrow">VERIFIED COMPARISON</div>
               <h2>Plan a safe comparison target</h2>
               <p className="field-help">A curated waterway with verified flow direction is required. Coordinates stay private; participants see an approximate area. Confirm a safe public viewpoint before creating a field mission.</p>
@@ -592,13 +592,13 @@ export function Reviewer({
             {!demo && <section className="decision-panel card card-body">
               <div className="eyebrow">CASE MATCHING</div>
               <h2>Merge related cases</h2>
-              <p className="field-help">Merge only reports of the same event on the same waterway. Different curated waterways are blocked. Source assessments and audit history remain available.</p>
+              <p className="field-help">Merge only reports of the same event and place. Waterway cases on different curated streams remain separate. Source assessments and audit history remain available.</p>
               <select value={mergeTarget} onChange={(e) => setMergeTarget(e.target.value)}>
                 <option value="">Choose the case to keep</option>
                 {incidents.filter((item) => item.id !== selected && item.category === incident.category).map((item) => <option key={item.id} value={item.id}>{titleOf(item)} · {item.id.slice(0, 8)}</option>)}
               </select>
-              <label>Evidence for same-waterway merge<textarea rows={3} value={mergeReason} onChange={(e) => setMergeReason(e.target.value)} /></label>
-              <label className="confirm-check"><input type="checkbox" checked={sameWaterway} onChange={(e) => setSameWaterway(e.target.checked)} />I verified that both reports concern the same waterway and event.</label>
+              <label>Evidence for merging these reports<textarea rows={3} value={mergeReason} onChange={(e) => setMergeReason(e.target.value)} /></label>
+              <label className="confirm-check"><input type="checkbox" checked={sameWaterway} onChange={(e) => setSameWaterway(e.target.checked)} />I verified that both reports concern the same place and event.</label>
               <button className="button secondary" disabled={busy || !mergeTarget || !sameWaterway || mergeReason.trim().length < 20} onClick={mergeCases}>Merge into selected case</button>
             </section>}
           </>

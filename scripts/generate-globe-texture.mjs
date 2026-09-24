@@ -26,10 +26,10 @@ for (let py = 0; py < height; py++) {
     const grain = Math.sin(px * 0.77 + py * 1.17) * Math.sin(py * 0.69 - px * 0.37);
     const moss = 0.5 + 0.5 * Math.sin(px * 0.025 + Math.cos(py * 0.034) * 3);
     const sparkle = land > 0.5 && grain > 0.79 ? 32 : 0;
-    const ocean = [7 + ripple * 3, 32 + ripple * 5, 43 + ripple * 6];
-    const terrain = [91 + moss * 31 + grain * 14 + sparkle,
-      131 + moss * 37 + grain * 15 + sparkle,
-      100 + moss * 25 + grain * 10 + sparkle];
+    const ocean = [188 + ripple * 5, 220 + ripple * 6, 216 + ripple * 6];
+    const terrain = [83 + moss * 30 + grain * 12 + sparkle,
+      137 + moss * 31 + grain * 13 + sparkle,
+      107 + moss * 22 + grain * 9 + sparkle];
     for (let channel = 0; channel < 3; channel++) {
       pixels[i + channel] = Math.max(0, Math.min(255,
         ocean[channel] * (1 - land) + terrain[channel] * land));
@@ -38,5 +38,5 @@ for (let py = 0; py < height; py++) {
   }
 }
 
-await writeFile("public/images/globe-texture.webp",
+await writeFile("public/images/globe-texture-light.webp",
   await sharp(pixels, { raw: { width, height, channels: 4 } }).webp({ quality: 82 }).toBuffer());

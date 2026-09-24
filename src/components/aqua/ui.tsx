@@ -208,8 +208,8 @@ export function Safety({
         </strong>
         <p>
           {flagged
-            ? `${smell ? "An unusual strong smell was reported." : "A safety concern has been flagged."} Keep your distance; do not approach or sample the water.`
-            : "Never enter the water, touch unknown material or put yourself at risk. Evidence status does not tell you whether water is safe."}
+            ? `${smell ? "An unusual strong smell was reported." : "A safety concern has been flagged."} Keep your distance; do not enter or sample the affected area.`
+            : "Stay on safe public paths. Do not touch unknown material, enter hazardous areas, or put yourself at risk. Evidence status is not a safety assessment."}
         </p>
       </div>
     </div>
@@ -224,7 +224,7 @@ export function Empty({
 }) {
   return (
     <div className="empty">
-      <Icon name="water" size={36} />
+      <Icon name="leaf" size={36} />
       <h2>{title}</h2>
       <p>
         {children ??
@@ -284,7 +284,7 @@ export function Footer() {
         <Icon /> AquaRelay
       </Link>
       <p>Small observations. Shared understanding.</p>
-      <span>Built for the water we share.</span>
+      <span>For the places we share.</span>
     </footer>
   );
 }

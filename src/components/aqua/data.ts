@@ -1,4 +1,5 @@
 import type { EvidenceStatus, IncidentCategory } from "@/domain/model";
+import type { MissionStory } from "@/features/missions/story";
 export const naturePhoto =
   "https://images.unsplash.com/photo-1437482078695-73f5ca6c96e2?auto=format&fit=crop&w=2000&q=85";
 export const foamPhoto = "/images/demo-foam.png";
@@ -31,7 +32,7 @@ export const statuses: Record<
     label: "Resolved or explained",
     icon: "✓",
     description:
-      "A reviewer has documented an outcome. This is not a water-safety determination.",
+      "A reviewer has documented an outcome. This is not a safety determination.",
   },
 };
 export interface Observation {
@@ -66,6 +67,7 @@ export interface Assessment {
 }
 export interface Incident {
   id: string;
+  stream_id?: string | null;
   category: IncidentCategory;
   location_label: string;
   evidence_status: EvidenceStatus;
@@ -98,6 +100,7 @@ export interface Mission {
   safety_message: string;
   distance_meters?: number;
   target_location?: { coordinates?: number[] };
+  story?: MissionStory | null;
 }
 export const demoObservations: Observation[] = [
   {
@@ -180,6 +183,7 @@ export const demoMissions: Mission[] = [
       "From a public path, observe the surface upstream. Record whether foam is visible; do not enter the water.",
     safety_message:
       "Paused after a strong-smell report. Do not approach this area.",
+    story: { category: "foam", evidenceStatus: "expert_review_recommended", reportedAt: "2026-09-22T09:10:00+05:30", missionCreatedAt: "2026-09-22T09:20:00+05:30", decision: "planned", decisionAt: null, responseCount: 1, lastResponseAt: "2026-09-22T09:28:00+05:30" },
   },
   {
     id: "demo-repeat",
@@ -191,6 +195,7 @@ export const demoMissions: Mission[] = [
     instructions:
       "Take a wide photograph from the public footpath. Describe what you see and record the observation time.",
     safety_message: "Stay on the public path. Do not touch or collect waste.",
+    story: { category: "litter", evidenceStatus: "needs_verification", reportedAt: "2026-09-22T08:30:00+05:30", missionCreatedAt: "2026-09-22T08:40:00+05:30", decision: "planned", decisionAt: null, responseCount: 0, lastResponseAt: null },
   },
   {
     id: "demo-comparison",
@@ -203,6 +208,7 @@ export const demoMissions: Mission[] = [
       "Observe the stream from the marked public bridge. A photograph of an unaffected reach is useful evidence too.",
     safety_message:
       "Keep behind the bridge railing. Skip the mission if access feels unsafe.",
+    story: { category: "flow", evidenceStatus: "early_signal", reportedAt: "2026-09-21T16:30:00+05:30", missionCreatedAt: "2026-09-21T16:45:00+05:30", decision: "planned", decisionAt: null, responseCount: 0, lastResponseAt: null },
   },
 ];
 export const demoIncidents: Incident[] = [

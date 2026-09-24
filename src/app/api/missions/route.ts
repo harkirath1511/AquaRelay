@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { SupabaseMissionRepository } from "@/features/missions/repository";
 import { MissionService } from "@/features/missions/service";
+import { attachMissionStories } from "@/features/missions/story";
 import { consumeLocationReadQuota } from "@/features/locations/read-quota";
 import { requireUser } from "@/lib/auth/require-user";
 import { errorResponse } from "@/lib/http/respond";
@@ -25,8 +26,10 @@ export async function POST(request: Request) {
     const user = await requireUser();
     const query = await request.json();
     await consumeLocationReadQuota(await createSupabaseServerClient(), user.id, "missions");
-    const missions = await new MissionService(new SupabaseMissionRepository(createSupabaseAdminClient())).list(user.id, query);
-    return NextResponse.json({ missions }, { headers: { "Cache-Control": "private, no-store" } });
+    const admin = createSupabaseAdminClient();
+    const missions = await new MissionService(new SupabaseMissionRepository(admin)).list(user.id, query);
+    const withStories = await attachMissionStories(admin, missions as Array<{ id: string; incident_id: string; available_from: string }>);
+    return NextResponse.json({ missions: withStories }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     return errorResponse(error);
   }

@@ -5,7 +5,7 @@ import "leaflet/dist/leaflet.css";
 
 export const metadata: Metadata = {
   title: "AquaRelay",
-  description: "Community verification for urban stream observations",
+  description: "Community verification for environmental observations",
 };
 
 export default function RootLayout({

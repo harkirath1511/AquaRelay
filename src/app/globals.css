@@ -386,6 +386,16 @@ svg {
 .trust-strip svg {
   width: 18px;
 }
+.environment-scope { display: grid; grid-template-columns: minmax(220px, .85fr) 2fr; gap: 55px; padding: 75px 7%; background: #f7faf5; }
+.environment-scope h2 { font-size: clamp(28px, 3vw, 42px); line-height: 1.2; margin: 14px 0; }
+.environment-scope > div:first-child p { color: var(--muted); font-size: 13px; line-height: 1.7; max-width: 360px; }
+.environment-scope-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.environment-scope-grid article { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 21px; }
+.environment-scope-grid .icon-disc { width: 36px; height: 36px; }
+.environment-scope-grid h3 { font-size: 16px; margin: 13px 0 4px; }
+.environment-scope-grid p { font-size: 12px; color: var(--muted); line-height: 1.6; margin: 0; }
+@media (max-width: 780px) { .environment-scope { grid-template-columns: 1fr; gap: 24px; padding: 55px 6%; } }
+@media (max-width: 480px) { .environment-scope-grid { grid-template-columns: 1fr; } }
 .section {
   padding: 85px 7%;
 }
@@ -1197,6 +1207,18 @@ footer .brand {
 .page-heading > p {
   color: var(--muted);
 }
+.own-missions {
+  margin-bottom: 38px;
+}
+.own-missions > h2,
+.nearby-missions-title {
+  font-size: 24px;
+  margin: 8px 0 10px;
+}
+.own-missions > p {
+  color: var(--muted);
+  margin-bottom: 20px;
+}
 .mission-toolbar {
   display: flex;
   align-items: center;
@@ -1215,12 +1237,12 @@ footer .brand {
 }
 .mission-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
   margin-bottom: 30px;
 }
 .mission-card .card-body {
-  padding: 26px;
+  padding: 28px;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -1236,8 +1258,7 @@ footer .brand {
 .mission-card h2 {
   font-size: 24px;
   line-height: 1.3;
-  min-height: 64px;
-  margin-bottom: 18px;
+  margin-bottom: 8px;
 }
 .mission-card h3 {
   font-size: 12px;
@@ -1245,10 +1266,29 @@ footer .brand {
   margin: 0 0 7px;
 }
 .mission-card p {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
-  line-height: 1.8;
+  line-height: 1.6;
 }
+.mission-purpose { margin: 0 0 14px; }
+.mission-distance { margin: 0 0 10px; }
+.mission-investigation-link { display: inline-flex; align-items: center; gap: 7px; color: var(--green); font-size: 12px; font-weight: 700; margin: 3px 0 18px; }
+.mission-gap, .mission-action-copy { background: #f4f7f1; border: 1px solid #dce7d8; border-radius: 9px; padding: 14px 16px; margin: 0 0 18px; }
+.mission-gap strong, .mission-action-copy strong { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+.mission-gap p, .mission-action-copy p { margin: 5px 0 0; }
+.mission-story { border-top: 1px solid var(--line); padding-top: 17px; margin-bottom: 18px; }
+.mission-story-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 13px; }
+.mission-story-heading h3 { font-size: 15px; margin: 0; }
+.mission-story-heading span { font-size: 10px; color: var(--muted); }
+.mission-timeline { list-style: none; margin: 0; padding: 0; }
+.mission-step { display: grid; grid-template-columns: 27px minmax(0, 1fr); gap: 11px; position: relative; padding: 0 0 19px; }
+.mission-step:not(:last-child)::before { content: ""; position: absolute; left: 12px; top: 27px; bottom: 0; width: 2px; background: #dbe6d8; }
+.mission-step-node { position: relative; z-index: 1; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: #dfeadd; color: #315a47; font-size: 11px; font-weight: 700; }
+.mission-step.current .mission-step-node { background: #285646; color: white; box-shadow: 0 0 0 4px #e4f1e7; }
+.mission-step.paused .mission-step-node { background: #f4e8c5; color: #755a20; }
+.mission-step strong { font-size: 12px; color: var(--ink); }
+.mission-step time { display: block; font-size: 10px; color: var(--muted); margin-top: 2px; }
+.mission-step p { margin: 3px 0 0; }
 .mission-place {
   display: flex;
   align-items: center;
@@ -3414,15 +3454,16 @@ hr {
 
 /* Landing globe: the map is illustrative, while the explorer shows investigations. */
 .hero.hero-globe-hero {
-  min-height: 650px;
-  height: min(790px, calc(100svh - 86px));
+  min-height: 640px;
+  height: min(750px, calc(100svh - 86px));
   max-height: none;
   margin: 0;
   border-radius: 0;
-  background: #071519;
+  color: var(--ink);
+  background: #f4f8f2;
   isolation: isolate;
   display: grid;
-  place-items: center;
+  align-items: center;
 }
 .hero.hero-globe-hero::after {
   content: "";
@@ -3431,33 +3472,33 @@ hr {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 40% 46% at 50% 49%, #051619b3, transparent 88%),
-    linear-gradient(0deg, #071519 0%, transparent 24%, transparent 77%, #07151966 100%);
+    linear-gradient(90deg, #f4f8f2 0%, #f4f8f2e8 31%, #f4f8f200 59%),
+    linear-gradient(0deg, #f4f8f2e0, transparent 20%);
 }
 .hero-globe {
   position: absolute;
   inset: 0;
   overflow: hidden;
   z-index: 0;
-  background: radial-gradient(ellipse 62% 75% at 50% 48%, #183933 0%, #0b2227 48%, #071519 78%);
+  background: radial-gradient(ellipse 60% 85% at 82% 49%, #d1eadf 0%, #e6f2e9 51%, #f4f8f2 82%);
 }
 .hero-globe::before,
 .hero-globe::after {
   content: "";
   position: absolute;
-  width: min(94vw, 1100px);
-  height: min(58vw, 650px);
+  width: min(82vw, 1100px);
+  height: min(55vw, 650px);
   top: 50%;
-  left: 50%;
-  border: 1px solid #b6d6bd24;
+  left: 82%;
+  border: 1px solid #5f9d8042;
   border-radius: 50%;
   transform: translate(-50%, -50%) rotate(-19deg);
   pointer-events: none;
 }
 .hero-globe::after {
-  width: min(99vw, 1160px);
-  height: min(45vw, 510px);
-  border-color: #b6d6bd14;
+  width: min(86vw, 1160px);
+  height: min(43vw, 510px);
+  border-color: #5f9d802b;
   transform: translate(-50%, -50%) rotate(23deg);
 }
 .hero-globe-halo,
@@ -3469,20 +3510,20 @@ hr {
   height: 100%;
 }
 .hero-globe-halo {
-  background: radial-gradient(circle at 50% 50%, #81bd8e30 0%, #6ca9810d 34%, transparent 63%);
+  background: radial-gradient(circle at 82% 50%, #9bd7b869 0%, #a9dabe19 35%, transparent 62%);
   filter: blur(28px);
 }
 .hero-globe-fallback {
   top: 50%;
-  left: 50%;
-  width: min(82vw, 1050px);
-  height: min(82vw, 1050px);
+  left: 82%;
+  width: min(74vw, 1000px);
+  height: min(74vw, 1000px);
   inset: auto;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  background: url("/images/globe-texture.webp") center / 314% 157% repeat-x;
-  box-shadow: inset -150px -90px 150px #020b12cc, inset 38px 38px 100px #b3e2ae33,
-    0 0 95px #9bdbad24;
+  background: url("/images/globe-texture-light.webp") center / 314% 157% repeat-x;
+  box-shadow: inset -110px -65px 130px #52746655, inset 38px 38px 100px #ffffffa6,
+    0 0 95px #8dbca142;
   opacity: 0.9;
   transition: opacity 0.3s ease;
 }
@@ -3502,56 +3543,71 @@ hr {
 }
 .hero.hero-globe-hero .hero-content {
   z-index: 2;
-  width: min(100%, 1000px);
-  padding: 96px 24px 115px;
-  text-align: center;
+  width: min(100%, 690px);
+  padding: 66px 0 80px 7%;
+  text-align: left;
   pointer-events: none;
 }
 .hero.hero-globe-hero .eyebrow {
-  justify-content: center;
-  color: #d2e5d5;
+  justify-content: flex-start;
+  color: #44745c;
   margin-bottom: 24px;
 }
 .hero.hero-globe-hero h1 {
-  font-size: clamp(48px, 6vw, 82px);
+  font-size: clamp(48px, 5.5vw, 76px);
   line-height: 1.04;
   letter-spacing: -0.055em;
   font-weight: 600;
-  margin: 0 auto 23px;
-  text-shadow: 0 2px 24px #06151bb3;
+  margin: 0 0 23px;
 }
 .hero.hero-globe-hero h1 em {
-  color: #d0edbb;
+  color: #4e8865;
 }
 .hero.hero-globe-hero .tagline {
   margin-bottom: 14px;
-  color: #f2f8f0;
-  text-shadow: 0 1px 14px #06151b;
+  color: #254a44;
 }
 .hero.hero-globe-hero .hero-description {
-  color: #d5e3db;
+  color: #526b61;
   margin-bottom: 26px;
-  text-shadow: 0 1px 12px #06151b;
 }
 .hero.hero-globe-hero .actions {
-  justify-content: center;
+  justify-content: flex-start;
   margin-bottom: 19px;
 }
 .hero.hero-globe-hero .button {
   pointer-events: auto;
 }
+.hero.hero-globe-hero .button.aqua {
+  background: #215a47;
+  color: white;
+}
+.hero.hero-globe-hero .button.aqua:hover {
+  background: #164633;
+}
 .hero.hero-globe-hero .button.translucent {
-  background: #081d25b8;
-  backdrop-filter: blur(8px);
+  background: #fbfdfac9;
+  color: #1f4b40;
+  border-color: #8eaea0;
+}
+.hero.hero-globe-hero .button.translucent:hover {
+  background: white;
 }
 .hero.hero-globe-hero .hero-note {
-  justify-content: center;
-  color: #d2e2d8;
+  justify-content: flex-start;
+  color: #637b71;
+  position: relative;
+  z-index: 3;
+  width: fit-content;
+  padding: 8px 11px;
+  border: 1px solid #dce9df;
+  border-radius: 6px;
+  background: #fbfdfae6;
 }
 .hero.hero-globe-hero .hero-caption,
 .hero.hero-globe-hero .hero-index {
   z-index: 2;
-  color: #c6dbd1;
+  color: #5c7d70;
 }
 .hero.hero-globe-hero .hero-caption {
   left: 5%;
@@ -3561,11 +3617,21 @@ hr {
 
 @media (max-width: 700px) {
   .hero.hero-globe-hero {
-    min-height: 680px;
+    min-height: 820px;
     height: auto;
   }
   .hero.hero-globe-hero .hero-content {
-    padding: 116px 20px 112px;
+    width: 100%;
+    padding: 62px 20px 400px;
+    text-align: center;
+  }
+  .hero.hero-globe-hero .eyebrow,
+  .hero.hero-globe-hero .actions,
+  .hero.hero-globe-hero .hero-note {
+    justify-content: center;
+  }
+  .hero.hero-globe-hero .hero-note {
+    margin: 0 auto;
   }
   .hero.hero-globe-hero h1 {
     font-size: clamp(40px, 11vw, 56px);
@@ -3585,8 +3651,26 @@ hr {
   .hero.hero-globe-hero .hero-index {
     display: none;
   }
+  .hero.hero-globe-hero::after {
+    background: linear-gradient(0deg, #f4f8f2 0%, transparent 16%, transparent 58%, #f4f8f2a8 85%);
+  }
+  .hero-globe {
+    background: radial-gradient(circle at 50% 77%, #d2eade 0%, #e8f3e9 40%, #f4f8f2 78%);
+  }
+  .hero-globe-halo {
+    background: radial-gradient(circle at 50% 77%, #9bd7b869, transparent 59%);
+  }
+  .hero-globe::before,
+  .hero-globe::after {
+    left: 50%;
+    top: 77%;
+    width: 135vw;
+    height: 83vw;
+  }
   .hero-globe-fallback {
-    width: 130vw;
-    height: 130vw;
+    left: 50%;
+    top: 77%;
+    width: 124vw;
+    height: 124vw;
   }
 }

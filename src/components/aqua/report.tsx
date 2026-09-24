@@ -31,7 +31,7 @@ export function Report({
   missionId?: string;
 }) {
   const [step, setStep] = useState(0),
-    [category, setCategory] = useState<IncidentCategory>("foam");
+    [category, setCategory] = useState<IncidentCategory>("other");
   const [description, setDescription] = useState("");
   const [visible, setVisible] = useState("yes"),
     [persists, setPersists] = useState("unknown");
@@ -282,11 +282,11 @@ export function Report({
                   >
                     <Icon
                       name={
-                        c === "wildlife" || c === "litter"
+                        ["wildlife", "litter", "illegal_dumping", "vegetation_loss", "habitat_damage", "soil_contamination"].includes(c)
                           ? "leaf"
-                          : c === "odour"
-                            ? "eye"
-                            : "water"
+                          : ["foam", "discolouration", "flow", "erosion"].includes(c)
+                            ? "water"
+                            : "eye"
                       }
                     />
                     {humanize(c)}
@@ -371,7 +371,7 @@ export function Report({
                   rows={4}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="For example: white foam collecting along the edge, visible from the footbridge."
+                  placeholder="For example: damaged trees beside the public path, visible from the entrance."
                 />
               </label>
               <div className="two-fields">
@@ -467,15 +467,15 @@ export function Report({
                 </>
               )}
               <label>
-                Waterway name or general area (optional)
+                Place name or general area (optional)
                 <input
                   value={label}
                   onChange={(e) => setLabel(e.target.value)}
                   maxLength={200}
-                  placeholder="A stream name or general area"
+                  placeholder="A park, street, waterway or general area"
                 />
               </label>
-              <p className="field-help">A specific waterway name, such as “River Thames”, helps match reports safely. A landmark alone cannot confirm that two reports concern the same waterway.</p>
+              <p className="field-help">Use a clear place name to help reviewers understand the setting. For water reports, a specific waterway name also helps avoid grouping unrelated observations.</p>
               <button
                 className="text-link current-time"
                 onClick={() => {
@@ -536,15 +536,14 @@ export function Report({
                   checked={safe}
                   onChange={(e) => setSafe(e.target.checked)}
                 />
-                I am now in a safe place and did not enter or sample the water.
+                I am now in a safe place and did not enter a hazardous area or touch unknown material.
               </label>
             </>
           )}
           {step === 4 && (
             <>
               <p className="muted">
-                Check the facts before sharing. No conclusion about the water is
-                being made.
+                Check the facts before sharing. This observation does not establish a cause or a safety finding.
               </p>
               <dl className="review-summary">
                 <dt>Observation</dt>
@@ -567,14 +566,14 @@ export function Report({
                 <dt>Safety flags</dt>
                 <dd>
                   {safetyFlags.map(humanize).join(", ") ||
-                    "None reported; water safety is not assessed"}
+                    "None reported; safety has not been assessed"}
                 </dd>
               </dl>
               {!demo && possibleCases.length > 0 && (
                 <div className="info-box" role="status">
                   <strong>Possible nearby investigations</strong>
-                  <p>These may be on another waterway. Check them before submitting; uncertain reports stay separate for reviewer assessment.</p>
-                  <ul>{possibleCases.map((item) => <li key={item.id}><Link href={`/investigations/${item.id}`} target="_blank" rel="noopener noreferrer">{item.location_label || "Approximate stream area"} · {new Date(item.opened_at).toLocaleDateString()}</Link></li>)}</ul>
+                  <p>These may describe a different place or event. Check them before submitting; uncertain reports stay separate for reviewer assessment.</p>
+                  <ul>{possibleCases.map((item) => <li key={item.id}><Link href={`/investigations/${item.id}`} target="_blank" rel="noopener noreferrer">{item.location_label || "Approximate area"} · {new Date(item.opened_at).toLocaleDateString()}</Link></li>)}</ul>
                 </div>
               )}
               {!demo && caseCheckError && <p className="field-help" role="status">Nearby-case check is unavailable. Your report can still be saved separately.</p>}

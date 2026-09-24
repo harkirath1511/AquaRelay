@@ -8,6 +8,12 @@ export const incidentCategories = [
   "odour",
   "flow",
   "erosion",
+  "air_quality",
+  "illegal_dumping",
+  "vegetation_loss",
+  "habitat_damage",
+  "soil_contamination",
+  "noise",
   "other",
 ] as const;
 
