@@ -28,22 +28,19 @@ export function Investigation({
   const [busy, setBusy] = useState(false);
   const [selectedObservation, setSelectedObservation] = useState<string>();
   const assessment = [...(i.assessments ?? [])]
-    .sort(
-      (a, b) =>
-        Date.parse(a.completed_at ?? "") - Date.parse(b.completed_at ?? ""),
-    )
-    .at(-1);
+    .sort((a, b) => (b.evidence_revision ?? 0) - (a.evidence_revision ?? 0))[0];
   const result = assessment?.result;
   const observations = [...(i.observations ?? [])].sort(
     (a, b) => Date.parse(a.observed_at) - Date.parse(b.observed_at),
   );
-  async function assess() {
+  async function assess(retryLegacy = false) {
     setBusy(true);
     setAssessmentError("");
     try {
-      await post(`/api/incidents/${i.id}/assess`, {});
+      await post(`/api/incidents/${i.id}/${retryLegacy ? "reassess" : "assess"}`, {});
       refresh();
     } catch (e) {
+      refresh();
       setAssessmentError(
         e instanceof Error ? e.message : "Assessment unavailable",
       );
@@ -156,13 +153,19 @@ export function Investigation({
                       <h2>{result.assessmentMode === "text_only" ? "Text-only assessment" : result.assessmentMode === "vision" ? "Evidence summary" : "Earlier assessment — image provenance unavailable"}</h2>
                       {result.assessmentMode === "text_only" && <p>Photos were not inspected by the AI. The participant&apos;s report remains unverified by an image.</p>}
                       <p>{result.assessmentMode ? result.summary?.text : "This earlier assessment did not record whether photos were inspected. Review the original report and images before relying on its claims."}</p>
+                      {!result.assessmentMode && !demo && <>
+                        <p>This is the old text-only result for this case. A contributor or reviewer can request a new photo check. The original report, photo, and earlier assessment will stay saved. If image inspection is unavailable, the new result will say text only.</p>
+                        <button className="button secondary" disabled={busy} onClick={() => assess(true)}>
+                          {busy ? "Checking photo…" : "Request fresh photo assessment"}
+                        </button>
+                      </>}
                       {result.imageReviews?.map((review) => <p className="assessment-note" key={review.mediaId}>
                         Photo {review.mediaId.slice(0, 8)}: {review.status.replaceAll("_", " ")} — {review.reason}
                       </p>)}
                       <div className="knowledge-grid">
                         <div>
                           <h3>Reported by participant</h3>
-                          <ul>{result.reportedFeatures?.map((f, n) => <li key={n}>{f.text}</li>)}</ul>
+                          <ul>{(result.reportedFeatures?.length ? result.reportedFeatures : observations.map((o) => ({ text: o.description }))).map((f, n) => <li key={n}>{f.text}</li>)}</ul>
                           <h3>Visually observed in inspected photo</h3>
                           <ul>
                             {result.assessmentMode === "vision" && result.observedFeatures?.map((f, n) => (
@@ -192,7 +195,9 @@ export function Investigation({
                   ) : (
                     <>
                       <h2>
-                        {assessment?.state === "failed"
+                        {assessment?.state === "pending"
+                          ? "Assessment is being prepared"
+                          : assessment?.state === "failed"
                           ? "The AI assessment could not be completed"
                           : "No completed assessment yet"}
                       </h2>
@@ -200,11 +205,11 @@ export function Investigation({
                         The original observations remain available. An
                         unavailable assessment does not change the evidence.
                       </p>
-                      {!demo && (
+                      {!demo && assessment?.state !== "pending" && (
                         <button
                           className="button secondary"
                           disabled={busy}
-                          onClick={assess}
+                          onClick={() => assess()}
                         >
                           {busy ? "Assessing…" : "Request assessment"}
                         </button>

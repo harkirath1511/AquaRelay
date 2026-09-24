@@ -50,6 +50,7 @@ export interface Observation {
 }
 export interface Assessment {
   id?: string;
+  evidence_revision?: number;
   state: string;
   completed_at?: string;
   result?: {

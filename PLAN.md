@@ -97,6 +97,7 @@ Store observation time separately from submission time. Preserve source evidence
 - `GET /api/incidents` — authorised, filtered investigation list/map data.
 - `GET /api/incidents/:id` — investigation details, evidence, and timeline.
 - `POST /api/incidents/:id/assess` — assess the current evidence revision.
+- `POST /api/incidents/:id/reassess` — contributor or reviewer opt-in retry for a legacy assessment without photo provenance; retain its old result.
 - `GET /api/missions` — available missions by area and type.
 - `POST /api/missions/:id/responses` — complete a mission and trigger reassessment.
 - `POST /api/incidents/:id/reviews` — record an authorised reviewer decision.
