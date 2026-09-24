@@ -109,8 +109,10 @@ kilometre steps, limiting coordinate inference from repeated search probes.
 The backend authenticates and checks a database quota before using the
 service-only spatial RPC. Ordinary incident lists are capped at 20 rows per
 page and 100 rows of offset; direct Supabase table reads are revoked so callers
-cannot skip those controls. Database quotas limit incident lists, details and
-mission searches per user per day. Request bodies, database
+cannot skip those controls. Ordinary case lists and details expose only
+generalized locations and do not spend the exact-location quota. Database
+quotas still limit exact-location access and proximity searches, including
+mission searches and possible-case matching. Request bodies, database
 errors and validation input values are not logged. Next development access logs
 are disabled to prevent accidental coordinate URLs entering console output.
 Production reverse proxies/APM/database audit tooling must likewise omit bodies,
