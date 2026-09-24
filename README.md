@@ -20,7 +20,7 @@ Copy `.env.example` to `.env.local` before enabling Supabase or AI integrations.
 ## Backend setup
 
 1. Create a Supabase project and apply the SQL files in `supabase/migrations` in filename order.
-2. Copy `.env.example` to `.env.local` and provide the Supabase URL, anonymous key, service-role key, and Gemini API key.
+2. Copy `.env.example` to `.env.local` and provide the Supabase URL, anonymous key, service-role key, and Groq API key.
 3. Assign reviewer accounts by changing `profiles.role` through a trusted service-role/admin operation.
 4. Run `pnpm test`, `pnpm typecheck`, `pnpm lint`, and `pnpm build` before deployment.
 

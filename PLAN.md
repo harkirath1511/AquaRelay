@@ -62,7 +62,7 @@ The MVP excludes automated pollution diagnosis, professional sampling, competiti
 - Next.js Route Handlers as the backend-for-frontend API.
 - Zod for request, domain, environment, and AI-output validation.
 - Supabase PostgreSQL with PostGIS, Auth, private Storage, and row-level security.
-- A server-only AI assessment adapter, initially configured for Gemini structured output.
+- A server-only AI assessment adapter using Groq structured output.
 - Vitest for domain and API tests; Playwright for critical end-to-end flows.
 - Vercel for the web application and Supabase for managed data services.
 

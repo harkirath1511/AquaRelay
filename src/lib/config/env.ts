@@ -7,8 +7,8 @@ const publicEnvironmentSchema = z.object({
 
 const serverEnvironmentSchema = publicEnvironmentSchema.extend({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
-  GEMINI_API_KEY: z.string().min(1).optional(),
-  GEMINI_MODEL: z.string().min(1).default("gemini-2.5-flash"),
+  GROQ_API_KEY: z.string().min(1).optional(),
+  GROQ_MODEL: z.string().min(1).default("qwen/qwen3.8-27b"),
 });
 
 export type ServerEnvironment = z.infer<typeof serverEnvironmentSchema>;
@@ -25,7 +25,7 @@ export function readServerEnvironment(): ServerEnvironment {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || undefined,
-    GEMINI_API_KEY: process.env.GEMINI_API_KEY || undefined,
-    GEMINI_MODEL: process.env.GEMINI_MODEL || undefined,
+    GROQ_API_KEY: process.env.GROQ_API_KEY || undefined,
+    GROQ_MODEL: process.env.GROQ_MODEL || undefined,
   });
 }

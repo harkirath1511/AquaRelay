@@ -10,14 +10,14 @@ On 23 September 2026, typecheck, 66 tests, lint and the production build passed.
 
 The confirmed browser-QA account signed in through the real form. On desktop and at 390 × 844, the live explorer showed both persisted cases on a Leaflet map and in list mode, with approximate areas, statuses and separate safety warnings. The resolved investigation showed three observations in its evidence timeline and a clear unavailable-assessment state. After audited role changes, the same account saw the protected reviewer queue, location and assessment panels, then the administrator role and safety audit. Its role was restored to participant. A Next.js development overlay appeared because the installed Grammarly extension injected attributes into `<body>` before hydration; the product layout itself remained usable.
 
-Successful AI assessment with a configured provider and deliverable-email confirmation/recovery remain unverified. The synthetic accounts use `example.test` addresses and cannot validate email delivery.
+The Groq adapter passed a synthetic API request with generated image evidence on 24 September 2026. An end-to-end assessment of a real incident and deliverable-email confirmation/recovery still require live verification. The synthetic accounts use `example.test` addresses and cannot validate email delivery.
 
 ## Configure a disposable project
 
 1. Use a confirmed non-production Supabase project. Apply the files in `supabase/migrations` in filename order using the project's SQL editor or existing migration deployment workflow. Apply only unapplied migrations to an existing project. Keep the deployment log; successful access to a table alone is not a migration audit. Migrations 007 and 008 are required privacy controls, not optional enhancements.
 2. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and server-only `SUPABASE_SERVICE_ROLE_KEY` in `.env.local`. Never expose the service key through a `NEXT_PUBLIC_` variable.
 3. Set the Supabase Auth site URL to the local app origin and allow its `/auth/callback` redirect. Signup confirmation and password recovery need working test email delivery. The fixture accounts below are confirmed by the service API and do **not** verify email delivery.
-4. Set `GEMINI_API_KEY` and `GEMINI_MODEL` for real assessments, or leave the key blank to exercise failure handling. Missing AI must preserve observations and photos and record an unavailable assessment. Successful AI status changes still require separate verification with a configured provider.
+4. Set `GROQ_API_KEY` and optionally `GROQ_MODEL` for real assessments, or leave the key blank to exercise failure handling. Missing AI must preserve observations and photos and record an unavailable assessment. Successful AI status changes still require separate verification with a configured provider.
 5. Start the app with `pnpm dev`. Use `http://localhost:3000` unless the server prints a different port. Ensure `.env.local` and the app point to the same project.
 
 The project's existing migration history was created through the connected Supabase plugin; no database password or `DATABASE_URL` was needed. For a different environment, inspect its migration history and apply only missing files through the normal migration deployment workflow.

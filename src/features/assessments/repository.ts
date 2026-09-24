@@ -86,7 +86,8 @@ export class SupabaseAssessmentRepository implements AssessmentRepository {
       }>;
     };
 
-    let remainingImages = 6;
+    // Groq's vision model accepts at most three images in one request.
+    let remainingImages = 3;
     const observations: AssessmentEvidence["observations"] = [];
     for (const observation of record.observations) {
       const media: AssessmentEvidence["observations"][number]["media"] = [];

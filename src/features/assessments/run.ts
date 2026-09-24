@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { after } from "next/server";
 import { readServerEnvironment } from "@/lib/config/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { GeminiAssessmentProvider } from "./gemini-provider";
+import { GroqAssessmentProvider } from "./groq-provider";
 import {
   SupabaseAssessmentRepository,
   AssessmentConflictError,
@@ -23,8 +23,8 @@ export async function assessCurrentIncident(
       throw new Error("Assessment provider is not configured");
     },
   };
-  const provider = env.GEMINI_API_KEY
-    ? new GeminiAssessmentProvider(env.GEMINI_API_KEY, env.GEMINI_MODEL)
+  const provider = env.GROQ_API_KEY
+    ? new GroqAssessmentProvider(env.GROQ_API_KEY, env.GROQ_MODEL)
     : unavailable;
   return new AssessmentService(
     new SupabaseAssessmentRepository(client, createSupabaseAdminClient()),
