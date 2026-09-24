@@ -5,6 +5,7 @@ import type { EvidenceStatus } from "@/domain/model";
 import { ApiError } from "./api";
 import { statuses } from "./data";
 import { AccountMenu } from "./account";
+import { ThemeToggle } from "./theme-toggle";
 
 export function Icon({
   name = "water",
@@ -131,6 +132,9 @@ export function Header({
           >
             Reviewer workspace <span>↗</span>
           </Link>
+          <Link className="mobile-account-link" href="/account?mode=live">
+            Account
+          </Link>
         </nav>
         <div className="header-actions">
           <AccountMenu />
@@ -140,6 +144,7 @@ export function Header({
               <span>⌄</span>
             </button>
           )}
+          <ThemeToggle />
           <Link
             className="button small"
             href={`/report${demo ? "?mode=demo" : ""}`}
