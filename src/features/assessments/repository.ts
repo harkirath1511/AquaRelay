@@ -53,7 +53,7 @@ export class SupabaseAssessmentRepository implements AssessmentRepository {
     const { data, error } = await this.adminClient
       .from("incidents")
       .select(
-        "id, category, evidence_revision, streams(flow_direction_verified), observations(id, author_id, observed_at, description, answers, safety_flags, is_potential_duplicate, location_quality_flag, location_quality, location_conflicts, spatial_facts, invalidated_at, missions(type, target_safe_verified), media(id, object_path, mime_type, processing_state))",
+        "id, category, evidence_revision, streams(flow_direction_verified), observations(id, author_id, observed_at, description, answers, safety_flags, is_potential_duplicate, location_quality_flag, location_quality, location_conflicts, spatial_facts, invalidated_at, missions!observations_mission_id_fkey(type, target_safe_verified), media(id, object_path, mime_type, processing_state))",
       )
       .eq("id", incidentId)
       .single();
