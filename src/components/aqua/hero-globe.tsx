@@ -39,11 +39,30 @@ void main() {
     0.5 + latitude / PI);
   vec3 surface = texture2D(u_earth, texturePoint).rgb;
 
-  float daylight = max(dot(vec3(point, depth),
-    normalize(vec3(-0.42, 0.72, 0.9))), 0.0);
-  vec3 color = surface * (0.61 + daylight * 0.39);
-  color += vec3(0.025, 0.08, 0.07) * pow(1.0 - depth, 2.8);
-  float edge = 1.0 - smoothstep(0.985, 1.0, distanceSquared);
+  // Relight the source map while preserving its dot texture and coastlines.
+  float land = 1.0 - smoothstep(0.46, 0.66, surface.r);
+  float textureDetail = clamp((surface.g - 0.25) * 1.65, 0.0, 1.0);
+  vec3 ocean = mix(vec3(0.055, 0.25, 0.34), vec3(0.13, 0.49, 0.56), depth);
+  vec3 terrain = mix(vec3(0.09, 0.34, 0.28), vec3(0.39, 0.65, 0.43), textureDetail);
+  vec3 color = mix(ocean, terrain, land);
+  vec3 normal = vec3(point, depth);
+  vec3 light = normalize(vec3(-0.55, 0.7, 0.85));
+  float daylight = max(dot(normal, light), 0.0);
+  color *= 0.56 + 0.52 * daylight;
+
+  float meridians = 1.0 - smoothstep(0.0, 0.035, abs(sin(longitude * 18.0)));
+  float parallels = 1.0 - smoothstep(0.0, 0.035, abs(sin(latitude * 18.0)));
+  color += (1.0 - land) * (meridians + parallels) * 0.035;
+  float glint = pow(max(dot(normal, light), 0.0), 20.0);
+  color += (1.0 - land) * vec3(0.26, 0.34, 0.28) * glint;
+  vec2 mapCell = texturePoint * vec2(600.0, 300.0);
+  float sparkleSeed = fract(sin(dot(floor(mapCell), vec2(127.1, 311.7))) * 43758.5453);
+  float sparkle = (1.0 - smoothstep(0.08, 0.42, length(fract(mapCell) - 0.5)))
+    * step(0.965, sparkleSeed) * land * (0.45 + 0.55 * daylight);
+  color = mix(color, vec3(0.92, 0.88, 0.59), sparkle * 0.75);
+  float atmosphere = pow(1.0 - depth, 3.0);
+  color += vec3(0.17, 0.47, 0.49) * atmosphere;
+  float edge = 1.0 - smoothstep(0.992, 1.0, distanceSquared);
   gl_FragColor = vec4(color, edge);
 }`;
 
@@ -118,8 +137,8 @@ export function HeroGlobe() {
     let dragging = false;
     let previousX = 0;
     let previousY = 0;
-    let angle = 0.28;
-    let tilt = 0.22;
+    let angle = -0.22;
+    let tilt = 0.12;
     let frame = 0;
     let lastFrame = 0;
 
@@ -139,11 +158,13 @@ export function HeroGlobe() {
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
       const radius = width < 700
-        ? Math.min(width * 0.62, height * 0.28)
-        : Math.min(width * 0.37, height * 0.65);
+        ? Math.min(width * 0.62, height * 0.29)
+        : width < 1050
+          ? Math.min(width * 0.23, height * 0.35)
+          : Math.min(width * 0.25, height * 0.43);
       gl.uniform2f(centerUniform,
-        (width < 700 ? width * 0.5 : width * 0.82) * ratio,
-        (width < 700 ? height * 0.23 : height * 0.5) * ratio);
+        (width < 700 ? width * 0.5 : width < 1050 ? width * 0.76 : width * 0.75) * ratio,
+        (width < 700 ? height * 0.23 : width < 1050 ? height * 0.51 : height * 0.49) * ratio);
       gl.uniform1f(radiusUniform, radius * ratio);
       gl.uniform1f(angleUniform, angle);
       gl.uniform1f(tiltUniform, tilt);
@@ -249,6 +270,10 @@ export function HeroGlobe() {
       <div className="hero-globe-halo" />
       <div className="hero-globe-fallback" />
       <canvas ref={canvasRef} />
+      <div className="hero-globe-orbit hero-globe-orbit-one" />
+      <div className="hero-globe-orbit hero-globe-orbit-two" />
+      <span className="hero-globe-signal hero-globe-signal-one" />
+      <span className="hero-globe-signal hero-globe-signal-two" />
     </div>
   );
 }

@@ -3452,13 +3452,13 @@ hr {
 
 /* Landing globe: the map is illustrative, while the explorer shows investigations. */
 .hero.hero-globe-hero {
-  min-height: 640px;
-  height: min(750px, calc(100svh - 86px));
+  min-height: 670px;
+  height: min(780px, calc(100svh - 86px));
   max-height: none;
   margin: 0;
   border-radius: 0;
   color: var(--ink);
-  background: #f4f8f2;
+  background: #f7faf6;
   isolation: isolate;
   display: grid;
   align-items: center;
@@ -3470,33 +3470,35 @@ hr {
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(90deg, #f4f8f2 0%, #f4f8f2e8 31%, #f4f8f200 59%),
-    linear-gradient(0deg, #f4f8f2e0, transparent 20%);
+    linear-gradient(90deg, #f7faf6 0%, #f7faf6f2 30%, #f7faf600 58%),
+    linear-gradient(0deg, #f7faf6d9, transparent 18%);
 }
 .hero-globe {
   position: absolute;
   inset: 0;
   overflow: hidden;
   z-index: 0;
-  background: radial-gradient(ellipse 60% 85% at 82% 49%, #d1eadf 0%, #e6f2e9 51%, #f4f8f2 82%);
+  background:
+    radial-gradient(ellipse 34% 58% at 75% 51%, #bde4d9 0%, #e2f1e9 58%, transparent 94%),
+    #f7faf6;
 }
 .hero-globe::before,
 .hero-globe::after {
   content: "";
   position: absolute;
-  width: min(82vw, 1100px);
-  height: min(55vw, 650px);
-  top: 50%;
-  left: 82%;
-  border: 1px solid #5f9d8042;
+  width: min(70vw, 990px);
+  height: min(39vw, 560px);
+  top: 51%;
+  left: 75%;
+  border: 1px solid #509e9780;
   border-radius: 50%;
   transform: translate(-50%, -50%) rotate(-19deg);
   pointer-events: none;
 }
 .hero-globe::after {
-  width: min(86vw, 1160px);
-  height: min(43vw, 510px);
-  border-color: #5f9d802b;
+  width: min(67vw, 960px);
+  height: min(50vw, 710px);
+  border-color: #7ab9a764;
   transform: translate(-50%, -50%) rotate(23deg);
 }
 .hero-globe-halo,
@@ -3508,20 +3510,21 @@ hr {
   height: 100%;
 }
 .hero-globe-halo {
-  background: radial-gradient(circle at 82% 50%, #9bd7b869 0%, #a9dabe19 35%, transparent 62%);
-  filter: blur(28px);
+  background: radial-gradient(circle at 75% 51%, #63b8ac75 0%, #b1e6ca28 35%, transparent 61%);
+  filter: blur(36px);
 }
 .hero-globe-fallback {
-  top: 50%;
-  left: 82%;
-  width: min(74vw, 1000px);
-  height: min(74vw, 1000px);
+  top: 51%;
+  left: 75%;
+  width: min(50vw, 670px);
+  height: min(50vw, 670px);
   inset: auto;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   background: url("/images/globe-texture-light.webp") center / 314% 157% repeat-x;
-  box-shadow: inset -110px -65px 130px #52746655, inset 38px 38px 100px #ffffffa6,
-    0 0 95px #8dbca142;
+  box-shadow: inset -100px -65px 130px #173f407d, inset 35px 38px 100px #ffffffa6,
+    0 0 65px #4b9a9866;
+  filter: saturate(1.7) contrast(1.12);
   opacity: 0.9;
   transition: opacity 0.3s ease;
 }
@@ -3539,10 +3542,40 @@ hr {
 .hero-globe.is-dragging canvas {
   cursor: grabbing;
 }
+.hero-globe-orbit {
+  position: absolute;
+  z-index: 2;
+  width: min(70vw, 990px);
+  height: min(39vw, 560px);
+  top: 51%;
+  left: 75%;
+  border: 1px solid #4b97916b;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(-19deg);
+  pointer-events: none;
+}
+.hero-globe-orbit-two {
+  width: min(67vw, 960px);
+  height: min(50vw, 710px);
+  border-color: #7ab9a762;
+  transform: translate(-50%, -50%) rotate(23deg);
+}
+.hero-globe-signal {
+  position: absolute;
+  z-index: 3;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #e6b462;
+  box-shadow: 0 0 0 5px #f2d6a95e, 0 0 24px #dc9e49;
+  pointer-events: none;
+}
+.hero-globe-signal-one { top: 19%; right: 11%; }
+.hero-globe-signal-two { bottom: 21%; right: 38%; width: 6px; height: 6px; }
 .hero.hero-globe-hero .hero-content {
   z-index: 2;
-  width: min(100%, 690px);
-  padding: 66px 0 80px 7%;
+  width: min(100%, 740px);
+  padding: 66px 0 80px 6.5%;
   text-align: left;
   pointer-events: none;
 }
@@ -3552,14 +3585,19 @@ hr {
   margin-bottom: 24px;
 }
 .hero.hero-globe-hero h1 {
-  font-size: clamp(48px, 5.5vw, 76px);
+  font-size: clamp(54px, 5.5vw, 84px);
   line-height: 1.04;
   letter-spacing: -0.055em;
   font-weight: 600;
   margin: 0 0 23px;
 }
 .hero.hero-globe-hero h1 em {
-  color: #4e8865;
+  color: #3e785a;
+  font-family: Georgia, serif;
+  font-size: 0.96em;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.075em;
 }
 .hero.hero-globe-hero .tagline {
   margin-bottom: 14px;
@@ -3610,8 +3648,36 @@ hr {
 .hero.hero-globe-hero .hero-caption {
   left: 5%;
   right: 5%;
-  bottom: 30px;
+  bottom: 25px;
 }
+.hero-globe-insight {
+  position: absolute;
+  z-index: 3;
+  right: 4.5%;
+  bottom: 85px;
+  width: 238px;
+  padding: 17px 18px;
+  display: grid;
+  gap: 8px;
+  color: #244d49;
+  background: #ffffffdc;
+  border: 1px solid #d8e9df;
+  box-shadow: 0 14px 42px #1b655124;
+  backdrop-filter: blur(15px);
+  pointer-events: none;
+}
+.hero-globe-insight span {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.hero-globe-insight strong {
+  font-family: Georgia, serif;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.16;
+}
+.hero-globe-insight-line { height: 1px; background: #c9dcd1; }
 
 @media (max-width: 700px) {
   .hero.hero-globe-hero {
@@ -3620,7 +3686,7 @@ hr {
   }
   .hero.hero-globe-hero .hero-content {
     width: 100%;
-    padding: 62px 20px 400px;
+    padding: 56px 20px 410px;
     text-align: center;
   }
   .hero.hero-globe-hero .eyebrow,
@@ -3635,6 +3701,8 @@ hr {
     font-size: clamp(40px, 11vw, 56px);
     letter-spacing: -0.045em;
   }
+  .hero-globe-insight,
+  .hero-globe-signal { display: none; }
   .hero.hero-globe-hero .tagline {
     font-size: 15px;
   }
@@ -3650,16 +3718,17 @@ hr {
     display: none;
   }
   .hero.hero-globe-hero::after {
-    background: linear-gradient(0deg, #f4f8f2 0%, transparent 16%, transparent 58%, #f4f8f2a8 85%);
+    background: linear-gradient(0deg, #f7faf6 0%, transparent 16%, transparent 58%, #f7faf6a8 85%);
   }
   .hero-globe {
-    background: radial-gradient(circle at 50% 77%, #d2eade 0%, #e8f3e9 40%, #f4f8f2 78%);
+    background: radial-gradient(circle at 50% 77%, #b9e3d8 0%, #e3f1e9 42%, #f7faf6 78%);
   }
   .hero-globe-halo {
     background: radial-gradient(circle at 50% 77%, #9bd7b869, transparent 59%);
   }
   .hero-globe::before,
-  .hero-globe::after {
+  .hero-globe::after,
+  .hero-globe-orbit {
     left: 50%;
     top: 77%;
     width: 135vw;
@@ -3671,4 +3740,125 @@ hr {
     width: 124vw;
     height: 124vw;
   }
+}
+
+/* Carry the globe's softer editorial treatment through the landing page. */
+.trust-strip {
+  padding: 21px 6.5%;
+  gap: 0;
+  background: #eaf3ed;
+  border-top: 1px solid #d9e8dd;
+  border-bottom: 1px solid #d9e8dd;
+  color: #315a4f;
+  font-weight: 600;
+}
+.trust-strip > span {
+  flex: 1;
+  padding: 7px 22px;
+  border-left: 1px solid #cbded2;
+}
+.trust-strip > span:first-child { border-left: 0; padding-left: 0; }
+.trust-strip > span:last-child { padding-right: 0; }
+.trust-strip svg { color: #3d806a; }
+.environment-scope {
+  padding-top: 104px;
+  padding-bottom: 104px;
+  gap: 72px;
+  background: linear-gradient(140deg, #f7faf6, #edf6f0);
+}
+.environment-scope h2 { max-width: 360px; letter-spacing: -0.055em; }
+.environment-scope-grid { gap: 16px; }
+.environment-scope-grid article {
+  min-height: 170px;
+  padding: 24px;
+  border-color: #d8e7dd;
+  border-radius: 16px;
+  background: linear-gradient(155deg, #ffffff, #f8fcf9);
+  box-shadow: 0 10px 30px #194d3310;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.environment-scope-grid article:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px #194d331c;
+}
+.environment-scope-grid .icon-disc { background: #e3f1e7; color: #276851; }
+.journey { background: #fffefa; }
+.journey .section-heading { margin-bottom: 38px; }
+.journey-grid { gap: 14px; }
+.journey-grid article,
+.journey-grid article:first-child,
+.journey-grid article:last-child,
+.journey-grid article:nth-child(3) {
+  min-height: 220px;
+  padding: 24px;
+  border: 1px solid #dfe9df;
+  border-radius: 16px;
+  background: #f8fbf7;
+}
+.journey-grid .step-top { margin-bottom: 26px; }
+.journey-grid .step-top > span:last-child { color: #7ba08e; font-weight: 700; }
+.story-section {
+  border: 1px solid #dae6dc;
+  border-radius: 20px;
+  box-shadow: 0 20px 55px #194d3313;
+  background: #eff5eb;
+}
+.story-copy { display: flex; flex-direction: column; justify-content: center; }
+.story-copy h2 { letter-spacing: -0.065em; }
+.closing {
+  margin-top: 92px;
+  background: radial-gradient(ellipse at 50% 100%, #dbefe2, #f8faf6 72%);
+  border-top: 1px solid #e3ebe2;
+}
+@media (max-width: 900px) {
+  .trust-strip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .trust-strip > span,
+  .trust-strip > span:first-child,
+  .trust-strip > span:last-child { padding: 8px 0; border: 0; }
+  .environment-scope { gap: 32px; padding-top: 72px; padding-bottom: 72px; }
+  .journey-grid { gap: 14px; }
+}
+@media (max-width: 700px) {
+  .hero.hero-globe-hero { min-height: 850px; }
+  .hero.hero-globe-hero .hero-content { padding-bottom: 440px; }
+  .environment-scope { padding-top: 60px; padding-bottom: 60px; }
+  .environment-scope-grid article { min-height: 150px; }
+  .journey-grid article,
+  .journey-grid article:first-child,
+  .journey-grid article:last-child,
+  .journey-grid article:nth-child(3) { min-height: 190px; padding: 18px; }
+  .closing { margin-top: 55px; }
+}
+@media (min-width: 701px) and (max-width: 1050px) {
+  .hero.hero-globe-hero .hero-content {
+    width: 58%;
+    padding-left: 5%;
+  }
+  .hero.hero-globe-hero h1 { font-size: clamp(42px, 5.4vw, 58px); }
+  .hero.hero-globe-hero .tagline { font-size: 15px; }
+  .hero.hero-globe-hero .hero-description { font-size: 12px; }
+  .hero.hero-globe-hero .actions {
+    flex-direction: column;
+    align-items: stretch;
+    max-width: 280px;
+  }
+  .hero-globe-insight { display: none; }
+  .hero-globe {
+    background: radial-gradient(ellipse 35% 60% at 76% 49%, #bde4d9, #e2f1e9 60%, #f7faf6);
+  }
+  .hero-globe-halo {
+    background: radial-gradient(circle at 76% 49%, #63b8ac75, transparent 60%);
+  }
+  .hero-globe-fallback {
+    left: 76%;
+    top: 49%;
+    width: 46vw;
+    height: 46vw;
+  }
+  .hero-globe-orbit,
+  .hero-globe::before,
+  .hero-globe::after { left: 76%; top: 49%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .environment-scope-grid article { transition: none; }
 }

@@ -46,6 +46,12 @@ export function Landing() {
               place to look.
             </div>
           </div>
+          <div className="hero-globe-insight" aria-hidden="true">
+            <span>01 / 03 · NOTICE</span>
+            <strong>A small signal can start a clearer picture.</strong>
+            <span className="hero-globe-insight-line" />
+            <span>OBSERVE&nbsp; → &nbsp;VERIFY&nbsp; → &nbsp;UNDERSTAND</span>
+          </div>
           <div className="hero-caption">
             <span>LOOK CLOSER. UNDERSTAND TOGETHER.</span>
             <span>DRAG TO EXPLORE THE GLOBE</span>
