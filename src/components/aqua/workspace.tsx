@@ -587,14 +587,14 @@ function Missions({ demo }: { demo: boolean }) {
             Map
           </button>
         </div>
-        <label>
+        {demo && <label>
           <span className="sr-only">Mission availability</span>
           <select value={filter} onChange={(e) => setFilter(e.target.value)}>
             <option value="all">All missions</option>
             <option value="available">Available</option>
             <option value="paused">Paused for safety</option>
           </select>
-        </label>
+        </label>}
         <label>
           <span className="sr-only">Search radius</span>
           <select value={radius} onChange={(e) => setRadius(e.target.value)}>
@@ -636,7 +636,11 @@ function Missions({ demo }: { demo: boolean }) {
               .map((m) => <MissionCard mission={m} demo={demo} key={m.id}
                 locationLabel={demo ? demoIncidents.find((incident) => incident.id === m.incident_id)?.location_label : undefined} />)}
           </div>
-          {!filtered.length && <Empty title="No nearby missions match this search" />}
+          {!filtered.length && (demo
+            ? <Empty title="No demo missions match this search" />
+            : <Empty title="No open missions within this radius">
+                Live missions appear here only while an investigation is open and a task is within {Number(radius) / 1000} km of your device. Resolved investigations and cancelled or safety-paused tasks are removed from nearby search.
+              </Empty>)}
           <Safety />
         </>
       )}
@@ -644,26 +648,54 @@ function Missions({ demo }: { demo: boolean }) {
   );
 }
 
+type ImpactContribution = {
+  id: string;
+  incident_id: string;
+  mission_id: string | null;
+  category: string;
+  submitted_at: string;
+  location_quality: string | null;
+  location_quality_flag: string | null;
+  is_potential_duplicate: boolean;
+  invalidated_at: string | null;
+};
+
+function contributionStatus(contribution: ImpactContribution, recognised: boolean) {
+  if (recognised) return "Automatically recognised";
+  if (contribution.invalidated_at) return "Removed from evidence";
+  if (contribution.is_potential_duplicate) return "Possible duplicate · no automatic recognition";
+  if (!contribution.mission_id) return "Original report submitted";
+  if (contribution.location_quality_flag === "far_from_target") return "Outside mission target · no automatic recognition";
+  if (contribution.location_quality === "low_accuracy") return "Location too imprecise for automatic recognition";
+  if (contribution.location_quality === "location_conflict") return "Location conflict · no automatic recognition";
+  return "Submitted · no automatic recognition";
+}
+
 function Impact({ demo }: { demo: boolean }) {
   const [events, setEvents] = useState<
       {
         id: string;
         incident_id: string;
+        observation_id: string;
         reason: string;
         points: number;
         reverses_event_id?: string;
         created_at: string;
       }[]
     >([]),
+    [contributions, setContributions] = useState<ImpactContribution[]>([]),
     [error, setError] = useState<Error | null>(null),
     [loading, setLoading] = useState(!demo),
     [revision, setRevision] = useState(0);
   useEffect(() => {
     if (demo) return;
     let active = true;
-    api<{ events: typeof events }>("/api/me/impact")
+    api<{ events: typeof events; contributions: ImpactContribution[] }>("/api/me/impact")
       .then((d) => {
-        if (active) setEvents(d.events);
+        if (active) {
+          setEvents(d.events);
+          setContributions(d.contributions);
+        }
       })
       .catch((e) => {
         if (active) setError(e);
@@ -712,7 +744,7 @@ function Impact({ demo }: { demo: boolean }) {
               <p>
                 {demo
                   ? "Your original report and return visit gave reviewers a place to start and evidence of persistence over time."
-                  : `${events.filter((e) => e.points > 0 && !events.some((r) => r.reverses_event_id === e.id)).length} recognised contributions in your evidence history.`}
+                  : `${contributions.length} submitted observation${contributions.length === 1 ? "" : "s"} · ${events.filter((e) => e.points > 0 && !events.some((r) => r.reverses_event_id === e.id)).length} automatically recognised.`}
               </p>
             </div>
           </div>
@@ -754,21 +786,24 @@ function Impact({ demo }: { demo: boolean }) {
                     See how the investigation changed <Icon name="arrow" />
                   </Link>
                 </>
-              ) : events.length ? (
-                events.map((e) => (
-                  <article className="card card-body" key={e.id}>
-                    <div className="eyebrow">
-                      {e.reverses_event_id
-                        ? "RECOGNITION UPDATED"
-                        : "EVIDENCE CONTRIBUTION"}
-                    </div>
-                    <h3>{humanize(e.reason)}</h3>
-                    <p>{dateLabel(e.created_at)}</p>
-                    <Link href={`/investigations/${e.incident_id}?mode=live`}>
-                      View investigation →
-                    </Link>
-                  </article>
-                ))
+              ) : contributions.length ? (
+                <>
+                  {contributions.map((contribution) => {
+                    const recognised = events.some((event) =>
+                      event.points > 0 && event.observation_id === contribution.id &&
+                      !events.some((reversal) => reversal.reverses_event_id === event.id));
+                    const status = contributionStatus(contribution, recognised);
+                    return <article className="card card-body" key={contribution.id}>
+                      <div className="eyebrow">{contribution.mission_id ? "MISSION RESPONSE" : "ORIGINAL REPORT"}</div>
+                      <h3>{humanize(contribution.category).replace(/^./, (letter) => letter.toUpperCase())} observation</h3>
+                      <p>{dateLabel(contribution.submitted_at)} · {status}</p>
+                      <Link href={`/investigations/${contribution.incident_id}?mode=live`}>
+                        View investigation →
+                      </Link>
+                    </article>;
+                  })}
+                  <p className="muted">Submitting evidence and earning automatic recognition are separate. Mission responses need a qualifying location and must pass duplicate and target checks.</p>
+                </>
               ) : (
                 <Empty title="Your first useful contribution starts here">
                   <Link href="/missions?mode=live">
