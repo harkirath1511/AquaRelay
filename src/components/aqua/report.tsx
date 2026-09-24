@@ -49,6 +49,8 @@ export function Report({
     [busy, setBusy] = useState(false),
     [done, setDone] = useState(false);
   const [geoMessage, setGeoMessage] = useState("");
+  const [possibleCases, setPossibleCases] = useState<Array<{ id: string; location_label: string | null; opened_at: string }>>([]);
+  const [caseCheckError, setCaseCheckError] = useState(false);
   const [saved, setSaved] = useState<SubmissionResult | null>(null);
   const key = useRef("");
   const heading = useRef<HTMLHeadingElement>(null);
@@ -61,6 +63,17 @@ export function Report({
     },
     [previews],
   );
+  useEffect(() => {
+    if (demo || step !== 4 || !latitude || !longitude) return;
+    let active = true;
+    post<{ cases: typeof possibleCases }>("/api/incidents/matches", {
+      category,
+      location: { latitude: Number(latitude), longitude: Number(longitude) },
+    }).then(({ cases }) => {
+      if (active) { setPossibleCases(cases); setCaseCheckError(false); }
+    }).catch(() => { if (active) setCaseCheckError(true); });
+    return () => { active = false; };
+  }, [demo, step, latitude, longitude, category]);
   function next() {
     setError("");
     if (step === 1 && !description.trim())
@@ -200,7 +213,7 @@ export function Report({
         </p>
         <Link
           className="button"
-          href={`/investigations/${demo ? "demo-foam" : saved?.incidentId}${demo ? "" : "?mode=live"}`}
+          href={`/investigations/${demo ? "demo-foam" : saved?.incidentId}${demo ? "?mode=demo" : ""}`}
         >
           See the investigation <Icon name="arrow" />
         </Link>
@@ -454,7 +467,7 @@ export function Report({
                 </>
               )}
               <label>
-                Stream or area name (optional)
+                Waterway name or general area (optional)
                 <input
                   value={label}
                   onChange={(e) => setLabel(e.target.value)}
@@ -462,6 +475,7 @@ export function Report({
                   placeholder="A stream name or general area"
                 />
               </label>
+              <p className="field-help">A specific waterway name, such as “River Thames”, helps match reports safely. A landmark alone cannot confirm that two reports concern the same waterway.</p>
               <button
                 className="text-link current-time"
                 onClick={() => {
@@ -556,6 +570,14 @@ export function Report({
                     "None reported; water safety is not assessed"}
                 </dd>
               </dl>
+              {!demo && possibleCases.length > 0 && (
+                <div className="info-box" role="status">
+                  <strong>Possible nearby investigations</strong>
+                  <p>These may be on another waterway. Check them before submitting; uncertain reports stay separate for reviewer assessment.</p>
+                  <ul>{possibleCases.map((item) => <li key={item.id}><Link href={`/investigations/${item.id}`} target="_blank" rel="noopener noreferrer">{item.location_label || "Approximate stream area"} · {new Date(item.opened_at).toLocaleDateString()}</Link></li>)}</ul>
+                </div>
+              )}
+              {!demo && caseCheckError && <p className="field-help" role="status">Nearby-case check is unavailable. Your report can still be saved separately.</p>}
               {demo && (
                 <div className="info-box">
                   This is a practice submission. It will not create a live

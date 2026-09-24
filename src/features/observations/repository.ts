@@ -71,8 +71,9 @@ export class SupabaseIncidentReader {
     let request = this.supabase
       .from("incidents")
       .select(
-        "id, stream_id, category, location, location_label, evidence_status, status_reasons, safety_state, evidence_revision, is_demo, opened_at, updated_at",
+        "id, stream_id, category, location, location_label, evidence_status, status_reasons, safety_state, evidence_revision, is_demo, merged_into_incident_id, opened_at, updated_at",
       )
+      .is("merged_into_incident_id", null)
       .order("updated_at", { ascending: false })
       .range(query.offset, query.offset + query.limit - 1);
 
@@ -90,7 +91,7 @@ export class SupabaseIncidentReader {
       .select(
         `
           id, stream_id, category, location, location_label, evidence_status,
-          status_reasons, safety_state, evidence_revision, is_demo, opened_at,
+          status_reasons, safety_state, evidence_revision, is_demo, merged_into_incident_id, opened_at,
           resolved_at, updated_at,
           observations (
             id, mission_id, author_id, observed_at, submitted_at, location,

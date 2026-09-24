@@ -44,7 +44,7 @@ function WorkspaceContent({ path }: { path: string[] }) {
   const query = useSearchParams(),
     router = useRouter(),
     page = path[0];
-  const demo = !["account", "admin"].includes(page) && query.get("mode") !== "live",
+  const demo = !["account", "admin"].includes(page) && query.get("mode") === "demo",
     id = path[1];
   const reviewIncident = query.get("incident");
   const [incidents, setIncidents] = useState<Incident[]>(
@@ -91,7 +91,7 @@ function WorkspaceContent({ path }: { path: string[] }) {
   }, [demo, page, id, revision, reviewIncident]);
   function changeMode() {
     router.push(
-      `/${["investigations", "account", "admin"].includes(page) ? "explore" : path.join("/")}${demo ? "?mode=live" : ""}`,
+      `/${["investigations", "account", "admin"].includes(page) ? "explore" : path.join("/")}${demo ? "" : "?mode=demo"}`,
     );
   }
   const known = [
@@ -360,7 +360,7 @@ function Explorer({
                   setSelected(i.id);
                   if (view === "list")
                     router.push(
-                      `/investigations/${i.id}${demo ? "" : "?mode=live"}`,
+                      `/investigations/${i.id}${demo ? "?mode=demo" : ""}`,
                     );
                 }}
                 key={i.id}
@@ -418,7 +418,7 @@ function Explorer({
               onSelect={setSelected}
               demo={demo}
             />
-            <Link className="map-missions-link" href={`/missions${demo ? "" : "?mode=live"}`}><Icon name="pin" size={15} />{demo ? "2 nearby open missions" : "Find nearby missions"} ↗</Link>
+            <Link className="map-missions-link" href={`/missions${demo ? "?mode=demo" : ""}`}><Icon name="pin" size={15} />{demo ? "2 nearby open missions" : "Find nearby missions"} ↗</Link>
             {incident && (
               <article className="map-detail card">
                 <button
@@ -462,7 +462,7 @@ function Explorer({
                   )}
                   <Link
                     className="button"
-                    href={`/investigations/${incident.id}${demo ? "" : "?mode=live"}`}
+                    href={`/investigations/${incident.id}${demo ? "?mode=demo" : ""}`}
                   >
                     Open investigation <Icon name="arrow" size={18} />
                   </Link>
@@ -691,7 +691,7 @@ function Missions({ demo }: { demo: boolean }) {
                     ) : (
                       <Link
                         className="button"
-                        href={`/report?mission=${m.id}${demo ? "" : "&mode=live"}`}
+                        href={`/report?mission=${m.id}${demo ? "&mode=demo" : ""}`}
                       >
                         Contribute an observation{" "}
                         <Icon name="arrow" size={18} />
@@ -815,7 +815,7 @@ function Impact({ demo }: { demo: boolean }) {
                       </div>
                     </article>
                   ))}
-                  <Link className="text-link" href="/investigations/demo-foam">
+                  <Link className="text-link" href="/investigations/demo-foam?mode=demo">
                     See how the investigation changed <Icon name="arrow" />
                   </Link>
                 </>

@@ -67,9 +67,11 @@ export class GroqAssessmentProvider implements AssessmentProvider {
       incidentId: evidence.incidentId,
       category: evidence.category,
       evidenceRevision: evidence.evidenceRevision,
+      streamDirectionVerified: evidence.streamDirectionVerified ?? false,
       observations: evidence.observations.map((observation) => ({
         id: observation.id,
         missionType: observation.missionType,
+        missionTargetVerified: observation.missionTargetVerified ?? false,
         observedAt: observation.observedAt,
         description: redactLocationText(observation.description),
         answers: observationAnswersSchema.safeParse(observation.answers).data ?? {},

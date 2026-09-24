@@ -51,6 +51,7 @@ export class SupabaseReviewRepository implements ReviewRepository {
         "id, stream_id, category, location, location_label, evidence_status, status_reasons, safety_state, evidence_revision, opened_at, updated_at, observations(id, location_quality, location_conflicts, spatial_facts)",
       )
       .eq("is_demo", false);
+    query = query.is("merged_into_incident_id", null);
     query = incidentId
       ? query.eq("id", incidentId)
       : query.is("resolved_at", null);

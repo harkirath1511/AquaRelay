@@ -384,7 +384,7 @@ export function AccountPage() {
             </button>
           ))}
       </div>
-      <Link className="text-link" href="/explore">
+      <Link className="text-link" href="/explore?mode=demo">
         Explore the labelled demo →
       </Link>
     </section>

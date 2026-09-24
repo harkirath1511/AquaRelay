@@ -2,11 +2,11 @@
 
 ## Run and modes
 
-Run `pnpm dev` and open `http://localhost:3000`. The landing page and all seven experiences work in demonstration mode without authentication. Demo observations, geography, images and decisions are visibly labelled; demo submissions do not upload files or write backend records. Reviewer demo decisions last only for the current mounted session.
+Run `pnpm dev` and open `http://localhost:3000`. The explorer opens in live mode, using the interactive OpenStreetMap map and persisted incidents. The landing page and all seven experiences remain available in demonstration mode through `?mode=demo` without authentication. Demo observations, geography, images and decisions are visibly labelled; demo submissions do not upload files or write backend records. Reviewer demo decisions last only for the current mounted session.
 
-Use **Switch to live data** to connect to the existing APIs. `/account` signs in using Supabase email/password authentication and session cookies. Provision participant and reviewer accounts through your existing Supabase administration process. Apply the repository migrations and configure `.env.local` as described in the README. Never expose the service-role key to the browser.
+Use **Explore the demo** to view the fictional walkthrough. `/account` signs in using Supabase email/password authentication and session cookies; live incident APIs require a session. Provision participant and reviewer accounts through your existing Supabase administration process. Apply the repository migrations and configure `.env.local` as described in the README. Never expose the service-role key to the browser.
 
-Routes: `/`, `/explore`, `/report`, `/investigations/:id`, `/missions`, `/impact`, `/review`, `/account`. Live routes use `?mode=live`. Mission responses use `/report?mission=:id&mode=live`.
+Routes: `/`, `/explore`, `/report`, `/investigations/:id`, `/missions`, `/impact`, `/review`, `/account`. Live mode is the default; `?mode=demo` explicitly opens the fictional walkthrough. Existing `?mode=live` links continue to work. Live mission responses use `/report?mission=:id`.
 
 ## Four-minute presentation
 

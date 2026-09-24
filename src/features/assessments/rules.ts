@@ -26,7 +26,8 @@ export function evaluateEvidence(
       && (observation.locationQuality === "precise" || observation.locationQuality === "approximate"),
   );
   const contributorCount = new Set(usable.map((observation) => observation.authorId)).size;
-  const hasSpatialComparison = usable.some((observation) =>
+  const hasSpatialComparison = evidence.streamDirectionVerified === true && usable.some((observation) =>
+    observation.missionTargetVerified === true &&
     observation.spatialFacts?.insideTargetRadius === true && (
       (observation.missionType === "upstream_comparison" && observation.spatialFacts.flowRelationship === "upstream")
       || (observation.missionType === "downstream_comparison" && observation.spatialFacts.flowRelationship === "downstream")
@@ -34,6 +35,13 @@ export function evaluateEvidence(
   );
   const hasPersistence = usable.some((observation) => observation.missionType === "repeat_observation"
     && observation.spatialFacts?.insideTargetRadius === true);
+  const unverifiedComparison = evidence.observations.some((observation) =>
+    ["upstream_comparison", "downstream_comparison", "unaffected_comparison"].includes(observation.missionType ?? "")
+    && (evidence.streamDirectionVerified !== true || observation.missionTargetVerified !== true
+      || observation.spatialFacts?.flowRelationship === "unknown"));
+  const spatialCaveat = unverifiedComparison
+    ? ["The comparison target or waterway flow direction is unverified; spatial support was not counted."]
+    : [];
   const hasSeriousSafetyFlag = [...assessment.safetyFlags, ...evidence.observations.flatMap((o) => o.safetyFlags)]
     .some((flag) => seriousSafetyFlags.has(flag));
 
@@ -56,7 +64,7 @@ export function evaluateEvidence(
   if (contributorCount >= 2 && hasSpatialComparison && hasPersistence) {
     return {
       status: "expert_review_recommended",
-      reasons: ["Independent, spatial, and repeat evidence supports expert review."],
+      reasons: ["Independent, verified spatial, and repeat evidence supports expert review."],
       pauseMissions: false,
     };
   }
@@ -64,18 +72,18 @@ export function evaluateEvidence(
   if (contributorCount >= 2 && assessment.observedFeatures.length > 0) {
     return {
       status: "community_supported_concern",
-      reasons: ["Relevant evidence was supplied by at least two distinct contributors."],
+      reasons: ["Relevant evidence was supplied by at least two distinct contributors.", ...spatialCaveat],
       pauseMissions: false,
     };
   }
 
   return {
     status: "needs_verification",
-    reasons: usable.length < evidence.observations.length
+    reasons: [...spatialCaveat, ...(usable.length < evidence.observations.length
       ? ["Some evidence has uncertain or conflicting location information and needs review."]
       : assessment.missingEvidence.length
       ? assessment.missingEvidence.slice(0, 5)
-      : ["Independent verification is still needed."],
+      : ["Independent verification is still needed."])],
     pauseMissions: false,
   };
 }

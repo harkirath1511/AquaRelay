@@ -68,15 +68,23 @@ describe("evaluateEvidence", () => {
   it("requires distinct contributors and spatial plus repeat evidence for expert review", () => {
     const evidence: AssessmentEvidence = {
       ...baseEvidence,
+      streamDirectionVerified: true,
       observations: [
         ...baseEvidence.observations,
         { ...baseEvidence.observations[0], id: "0fd4443f-29c7-4431-b515-734e75ef19d7", authorId: "user-two", missionType: "upstream_comparison",
+          missionTargetVerified: true,
           spatialFacts: { distanceFromOrigin: "within_250m", streamRelationship: "same", flowRelationship: "upstream", insideTargetRadius: true } },
         { ...baseEvidence.observations[0], id: "858e6787-119f-42f5-a9d5-8b62b8dcf85c", authorId: "user-three", missionType: "repeat_observation",
           spatialFacts: { distanceFromOrigin: "within_100m", streamRelationship: "same", flowRelationship: "same_reach", insideTargetRadius: true } },
       ],
     };
     expect(evaluateEvidence(evidence, baseAssessment).status).toBe("expert_review_recommended");
+    expect(evaluateEvidence({ ...evidence, streamDirectionVerified: false }, baseAssessment).status)
+      .toBe("community_supported_concern");
+    expect(evaluateEvidence({ ...evidence, streamDirectionVerified: false }, baseAssessment).reasons)
+      .toContain("The comparison target or waterway flow direction is unverified; spatial support was not counted.");
+    evidence.observations[1].missionTargetVerified = false;
+    expect(evaluateEvidence(evidence, baseAssessment).status).toBe("community_supported_concern");
   });
 
   it("does not count duplicate observations as independent support", () => {

@@ -40,6 +40,7 @@ export interface Observation {
   description: string;
   observed_at: string;
   is_potential_duplicate?: boolean;
+  invalidated_at?: string | null;
   safety_flags?: string[];
   label?: string;
   contributor?: string;
@@ -65,6 +66,8 @@ export interface Incident {
   location_label: string;
   evidence_status: EvidenceStatus;
   safety_state: string;
+  status_reasons?: string[];
+  merged_into_incident_id?: string | null;
   is_demo?: boolean;
   updated_at: string;
   opened_at?: string;

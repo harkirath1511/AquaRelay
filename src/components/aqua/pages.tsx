@@ -164,7 +164,7 @@ export function Landing() {
                 <strong>1</strong> shared investigation
               </span>
             </div>
-            <Link className="text-link" href="/investigations/demo-foam">
+            <Link className="text-link" href="/investigations/demo-foam?mode=demo">
               Follow Maya’s investigation <Icon name="arrow" />
             </Link>
           </div>

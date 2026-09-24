@@ -53,7 +53,7 @@ export function Investigation({
   }
   return (
     <div className="investigation-page">
-      <Link className="breadcrumb" href={`/explore${demo ? "" : "?mode=live"}`}>
+      <Link className="breadcrumb" href={`/explore${demo ? "?mode=demo" : ""}`}>
         ← All investigations
       </Link>
       <div className="investigation-heading">
@@ -71,6 +71,7 @@ export function Investigation({
         </div>
         <Badge status={i.evidence_status} />
       </div>
+      {i.merged_into_incident_id && <div className="info-box" role="status">A reviewer merged this case into a related investigation. Its original history remains here. <Link href={`/investigations/${i.merged_into_incident_id}`}>Open the current investigation →</Link></div>}
       <div
         className="detail-tabs"
         role="tablist"
@@ -348,6 +349,7 @@ export function Investigation({
             <div className="eyebrow">WHERE THE EVIDENCE STANDS</div>
             <Badge status={i.evidence_status} />
             <p>{statuses[i.evidence_status]?.description}</p>
+            {!!i.status_reasons?.length && <ul>{i.status_reasons.map((reason, n) => <li key={n}>{reason}</li>)}</ul>}
             <div className="mini-stat">
               <strong>{observations.length}</strong>
               <span>contributions in the record</span>
@@ -372,8 +374,8 @@ export function Investigation({
               className="text-link"
               href={
                 i.safety_state !== "normal"
-                  ? `/review${demo ? "" : "?mode=live"}`
-                  : `/missions${demo ? "" : "?mode=live"}`
+                  ? `/review${demo ? "?mode=demo" : ""}`
+                  : `/missions${demo ? "?mode=demo" : ""}`
               }
             >
               {i.safety_state !== "normal"

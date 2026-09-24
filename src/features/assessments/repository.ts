@@ -53,7 +53,7 @@ export class SupabaseAssessmentRepository implements AssessmentRepository {
     const { data, error } = await this.adminClient
       .from("incidents")
       .select(
-        "id, category, evidence_revision, observations(id, author_id, observed_at, description, answers, safety_flags, is_potential_duplicate, location_quality_flag, location_quality, location_conflicts, spatial_facts, invalidated_at, missions(type), media(id, object_path, mime_type, processing_state))",
+        "id, category, evidence_revision, streams(flow_direction_verified), observations(id, author_id, observed_at, description, answers, safety_flags, is_potential_duplicate, location_quality_flag, location_quality, location_conflicts, spatial_facts, invalidated_at, missions(type, target_safe_verified), media(id, object_path, mime_type, processing_state))",
       )
       .eq("id", incidentId)
       .single();
@@ -63,6 +63,7 @@ export class SupabaseAssessmentRepository implements AssessmentRepository {
       id: string;
       category: string;
       evidence_revision: number;
+      streams: { flow_direction_verified: boolean } | null;
       observations: Array<{
         id: string;
         author_id: string;
@@ -76,7 +77,7 @@ export class SupabaseAssessmentRepository implements AssessmentRepository {
         location_quality: AssessmentEvidence["observations"][number]["locationQuality"];
         location_conflicts: string[];
         spatial_facts: AssessmentEvidence["observations"][number]["spatialFacts"];
-        missions: { type: string } | null;
+        missions: { type: string; target_safe_verified: boolean } | null;
         media: Array<{
           id: string;
           object_path: string;
@@ -110,6 +111,7 @@ export class SupabaseAssessmentRepository implements AssessmentRepository {
         id: observation.id,
         authorId: observation.author_id,
         missionType: observation.missions?.type ?? null,
+        missionTargetVerified: observation.missions?.target_safe_verified ?? false,
         observedAt: observation.observed_at,
         description: observation.description,
         answers: observation.answers,
@@ -128,6 +130,7 @@ export class SupabaseAssessmentRepository implements AssessmentRepository {
       incidentId: record.id,
       category: record.category,
       evidenceRevision: record.evidence_revision,
+      streamDirectionVerified: record.streams?.flow_direction_verified ?? false,
       observations,
     };
   }

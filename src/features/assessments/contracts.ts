@@ -26,10 +26,12 @@ export interface AssessmentEvidence {
   incidentId: string;
   category: string;
   evidenceRevision: number;
+  streamDirectionVerified?: boolean;
   observations: Array<{
     id: string;
     authorId: string;
     missionType: string | null;
+    missionTargetVerified?: boolean;
     observedAt: string;
     description: string;
     answers: Record<string, unknown>;

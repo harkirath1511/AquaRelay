@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { sanitizeImage } from "./image";
+import { sanitizeImage, visuallySimilar } from "./image";
 import type { CreateUploadIntentInput, UploadIntent } from "./contracts";
 
 const bucket = "observation-media";
@@ -114,13 +114,28 @@ export class UploadRepository {
         .select("id", { count: "exact", head: true })
         .eq("sha256", sanitized.sha256)
         .eq("processing_state", "ready")
+        .neq("observation_id", media.observation_id)
         .neq("id", mediaId);
       if (duplicateError) throw new Error(`Duplicate check failed: ${duplicateError.message}`);
+
+      const { data: observation, error: incidentError } = await this.admin.from("observations")
+        .select("incident_id").eq("id", media.observation_id).single();
+      if (incidentError) throw new Error(`Observation lookup failed: ${incidentError.message}`);
+      const { data: nearbyPhotos, error: visualError } = await this.admin.from("media")
+        .select("id, visual_hash, observations!inner(incident_id)")
+        .eq("observations.incident_id", observation.incident_id)
+        .eq("processing_state", "ready").not("visual_hash", "is", null)
+        .neq("observation_id", media.observation_id).neq("id", mediaId).limit(100);
+      if (visualError) throw new Error(`Visual duplicate check failed: ${visualError.message}`);
+      const visualDuplicate = (nearbyPhotos ?? []).some((photo) =>
+        typeof photo.visual_hash === "string" && visuallySimilar(photo.visual_hash, sanitized.visualHash));
+      const potentialDuplicate = (duplicateCount ?? 0) > 0 || visualDuplicate;
 
       const { error: updateError } = await this.admin
         .from("media")
         .update({
           sha256: sanitized.sha256,
+          visual_hash: sanitized.visualHash,
           mime_type: sanitized.contentType,
           byte_size: sanitized.buffer.byteLength,
           processing_state: "ready",
@@ -133,7 +148,7 @@ export class UploadRepository {
         {
           p_observation_id: media.observation_id,
           p_media_id: mediaId,
-          p_is_duplicate: (duplicateCount ?? 0) > 0,
+          p_is_duplicate: potentialDuplicate,
         },
       );
       if (revisionError) throw new Error(`Evidence revision update failed: ${revisionError.message}`);
@@ -142,7 +157,7 @@ export class UploadRepository {
         mediaId,
         state: "ready",
         replayed: false,
-        potentialDuplicate: (duplicateCount ?? 0) > 0,
+        potentialDuplicate,
         evidenceRevision: revision,
       };
     } catch (error) {

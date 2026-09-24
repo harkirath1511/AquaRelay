@@ -9,7 +9,7 @@ export class IncidentExportRepository {
       .select(
         `
           id, stream_id, category, location, location_label, evidence_status,
-          status_reasons, safety_state, evidence_revision, opened_at, resolved_at, updated_at,
+          status_reasons, safety_state, evidence_revision, merged_into_incident_id, opened_at, resolved_at, updated_at,
           streams (id, name, city),
           observations (
             id, mission_id, author_id, observed_at, submitted_at, location,

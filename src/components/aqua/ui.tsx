@@ -84,7 +84,7 @@ export function Icon({
 }
 export function Header({
   active = "",
-  demo = true,
+  demo = false,
   onMode,
 }: {
   active?: string;
@@ -120,13 +120,13 @@ export function Header({
             <Link
               key={path}
               aria-current={active === path ? "page" : undefined}
-              href={`/${path}${!demo ? "?mode=live" : ""}`}
+              href={`/${path}${demo ? "?mode=demo" : ""}`}
             >
               {label}
             </Link>
           ))}
           <Link
-            href={`/review${demo ? "" : "?mode=live"}`}
+            href={`/review${demo ? "?mode=demo" : ""}`}
             className="review-link"
           >
             Reviewer workspace <span>↗</span>
@@ -142,7 +142,7 @@ export function Header({
           )}
           <Link
             className="button small"
-            href={`/report${!demo ? "?mode=live" : ""}`}
+            href={`/report${demo ? "?mode=demo" : ""}`}
           >
             <span>+</span> Report an observation
           </Link>

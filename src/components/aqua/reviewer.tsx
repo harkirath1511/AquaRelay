@@ -53,6 +53,13 @@ export function Reviewer({
     [explanation, setExplanation] = useState(""),
     [message, setMessage] = useState("");
   const [requestedMissions, setRequestedMissions] = useState<MissionType[]>([]);
+  const [mergeTarget, setMergeTarget] = useState(""), [mergeReason, setMergeReason] = useState(""),
+    [sameWaterway, setSameWaterway] = useState(false);
+  const [comparisonType, setComparisonType] = useState<"upstream_comparison" | "downstream_comparison" | "unaffected_comparison">("upstream_comparison"),
+    [targetLatitude, setTargetLatitude] = useState(""), [targetLongitude, setTargetLongitude] = useState(""),
+    [targetSafe, setTargetSafe] = useState(false), [comparisonReason, setComparisonReason] = useState(""),
+    [baselineId, setBaselineId] = useState("");
+  const [invalidObservation, setInvalidObservation] = useState(""), [invalidReason, setInvalidReason] = useState("");
   const [tab, setTab] = useState("Evidence"),
     [exact, setExact] = useState<
       | {
@@ -183,6 +190,40 @@ export function Reviewer({
     } catch (e) {
       setMessage(e instanceof Error ? e.message : "Location unavailable");
     }
+  }
+  async function mergeCases() {
+    setBusy(true); setMessage("");
+    try {
+      await post(`/api/incidents/${selected}/merge`, {
+        targetId: mergeTarget, reason: mergeReason, sameWaterwayConfirmed: sameWaterway,
+      });
+      setMessage("Cases merged with an audit record. The combined evidence is being reassessed.");
+      setSelected(mergeTarget); setRevision((n) => n + 1); refresh();
+    } catch (e) { setMessage(e instanceof Error ? e.message : "Merge failed"); }
+    finally { setBusy(false); }
+  }
+  async function planComparison() {
+    setBusy(true); setMessage("");
+    try {
+      await post(`/api/incidents/${selected}/comparison-missions`, {
+        type: comparisonType,
+        target: { latitude: Number(targetLatitude), longitude: Number(targetLongitude) },
+        safeViewpointConfirmed: targetSafe,
+        reason: comparisonReason,
+        baselineObservationId: baselineId || null,
+      });
+      setMessage("Verified comparison mission created."); setRevision((n) => n + 1); refresh();
+    } catch (e) { setMessage(e instanceof Error ? e.message : "Comparison mission could not be created"); }
+    finally { setBusy(false); }
+  }
+  async function invalidateEvidence() {
+    setBusy(true); setMessage("");
+    try {
+      await post(`/api/observations/${invalidObservation}/invalidate`, { reason: invalidReason });
+      setMessage("Observation invalidated and any prior recognition reversed. Reassessment is pending.");
+      setRevision((n) => n + 1); refresh();
+    } catch (e) { setMessage(e instanceof Error ? e.message : "Observation could not be invalidated"); }
+    finally { setBusy(false); }
   }
   return (
     <div className="review-workspace">
@@ -471,10 +512,10 @@ export function Reviewer({
                   <p className="field-help">
                     {incident.safety_state === "missions_paused"
                       ? "Field missions remain paused for safety. You can still record a request and reasoning."
-                      : "Choose the evidence gaps to address. Existing open missions are reused; new missions use approved safety instructions."}
+                      : "Choose safe repeat, photo or access-report tasks. Comparisons require a separately verified target and waterway direction."}
                   </p>
                   <div className="checks">
-                    {missionTypes.map((type) => (
+                    {missionTypes.filter((type) => !["upstream_comparison", "downstream_comparison", "unaffected_comparison"].includes(type)).map((type) => (
                       <label key={type}>
                         <input
                           type="checkbox"
@@ -518,6 +559,45 @@ export function Reviewer({
                 <Icon name="check" />
               </button>
             </section>
+            {!demo && <section className="decision-panel card card-body">
+              <div className="eyebrow">VERIFIED COMPARISON</div>
+              <h2>Plan a safe comparison target</h2>
+              <p className="field-help">A curated waterway with verified flow direction is required. Coordinates stay private; participants see an approximate area. Confirm a safe public viewpoint before creating a field mission.</p>
+              <select value={comparisonType} onChange={(e) => setComparisonType(e.target.value as typeof comparisonType)}>
+                <option value="upstream_comparison">Upstream comparison</option>
+                <option value="downstream_comparison">Downstream comparison</option>
+                <option value="unaffected_comparison">Unaffected comparison</option>
+              </select>
+              <label>Safe target latitude<input type="number" step="any" value={targetLatitude} onChange={(e) => setTargetLatitude(e.target.value)} /></label>
+              <label>Safe target longitude<input type="number" step="any" value={targetLongitude} onChange={(e) => setTargetLongitude(e.target.value)} /></label>
+              {comparisonType === "unaffected_comparison" && <label>Quality-checked unaffected baseline observation ID<input value={baselineId} onChange={(e) => setBaselineId(e.target.value)} /></label>}
+              <label>Why this target is appropriate<textarea rows={2} value={comparisonReason} onChange={(e) => setComparisonReason(e.target.value)} /></label>
+              <label className="confirm-check"><input type="checkbox" checked={targetSafe} onChange={(e) => setTargetSafe(e.target.checked)} />I verified that this is a safe public viewpoint.</label>
+              <button className="button secondary" disabled={busy || !targetSafe || !targetLatitude || !targetLongitude || comparisonReason.trim().length < 10} onClick={planComparison}>Create comparison mission</button>
+            </section>}
+            {!demo && <section className="decision-panel card card-body">
+              <div className="eyebrow">SOURCE EVIDENCE</div>
+              <h2>Invalidate an observation</h2>
+              <p className="field-help">The original record remains visible. The action is audited, triggers reassessment, and reverses any impact award.</p>
+              <select value={invalidObservation} onChange={(e) => setInvalidObservation(e.target.value)}>
+                <option value="">Select an observation</option>
+                {incident.observations?.filter((o) => !o.invalidated_at).map((o) => <option key={o.id} value={o.id}>{o.id} · {o.description.slice(0, 60)}</option>)}
+              </select>
+              <label>Reason<textarea rows={2} value={invalidReason} onChange={(e) => setInvalidReason(e.target.value)} /></label>
+              <button className="button secondary" disabled={busy || !invalidObservation || invalidReason.trim().length < 10} onClick={invalidateEvidence}>Invalidate observation</button>
+            </section>}
+            {!demo && <section className="decision-panel card card-body">
+              <div className="eyebrow">CASE MATCHING</div>
+              <h2>Merge related cases</h2>
+              <p className="field-help">Merge only reports of the same event on the same waterway. Different curated waterways are blocked. Source assessments and audit history remain available.</p>
+              <select value={mergeTarget} onChange={(e) => setMergeTarget(e.target.value)}>
+                <option value="">Choose the case to keep</option>
+                {incidents.filter((item) => item.id !== selected && item.category === incident.category).map((item) => <option key={item.id} value={item.id}>{titleOf(item)} · {item.id.slice(0, 8)}</option>)}
+              </select>
+              <label>Evidence for same-waterway merge<textarea rows={3} value={mergeReason} onChange={(e) => setMergeReason(e.target.value)} /></label>
+              <label className="confirm-check"><input type="checkbox" checked={sameWaterway} onChange={(e) => setSameWaterway(e.target.checked)} />I verified that both reports concern the same waterway and event.</label>
+              <button className="button secondary" disabled={busy || !mergeTarget || !sameWaterway || mergeReason.trim().length < 20} onClick={mergeCases}>Merge into selected case</button>
+            </section>}
           </>
         )}
         {message && (
