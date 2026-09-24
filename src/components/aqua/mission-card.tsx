@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Mission } from "./data";
 import { dateLabel, humanize, statuses } from "./data";
 import { Icon } from "./ui";
+import { FieldScene } from "./field-visuals";
 
 const missionNames: Record<string, { title: string; purpose: string; icon: string }> = {
   repeat_observation: {
@@ -99,14 +100,9 @@ export function MissionCard({
   ] as const;
 
   return (
-    <article className="mission-card card">
+    <article className={`mission-card card ${paused ? "mission-paused" : ""}`}>
+      <div className="mission-card-visual"><FieldScene habitat={mission.type.includes("comparison") ? "water" : mission.type === "clearer_photo" ? "land" : "air"} /><span className="mission-visual-label"><Icon name={guide.icon} size={17}/>{humanize(mission.type)}</span><span className={paused ? "paused-label" : "available-label"}>{paused ? "Paused for safety" : completed ? "Completed" : "Open mission"}</span></div>
       <div className="card-body">
-        <div className="split">
-          <span className="icon-disc"><Icon name={guide.icon} /></span>
-          <span className={paused ? "paused-label" : "available-label"}>
-            {paused ? "Paused for safety" : completed ? "Completed" : "Open mission"}
-          </span>
-        </div>
         <div className="eyebrow">{demo ? "DEMO · " : ""}{humanize(mission.type).toUpperCase()}</div>
         <h2>{guide.title}</h2>
         <p className="mission-purpose">{guide.purpose}</p>
@@ -120,9 +116,11 @@ export function MissionCard({
           </Link>
         )}
         <div className="mission-gap"><strong>Question to answer</strong><p>{mission.evidence_gap}</p></div>
-        <div className="mission-story">
-          <div className="mission-story-heading">
-            <h3>How this mission got here</h3>
+        <details className="mission-story">
+          <summary className="mission-story-heading">
+            <span>How this mission got here</span><span className="mission-story-toggle" aria-hidden="true">+</span>
+          </summary>
+          <div className="mission-story-status">
             {status && <span>Investigation: {status.label}</span>}
           </div>
           <ol className="mission-timeline" aria-label="Mission progress">
@@ -137,7 +135,7 @@ export function MissionCard({
               </li>
             ))}
           </ol>
-        </div>
+        </details>
         <div className="mission-action-copy"><strong>Your task</strong><p>{mission.instructions}</p></div>
         <div className="mission-safety"><Icon name="shield" size={18} />{mission.safety_message}</div>
         {paused || completed ? (

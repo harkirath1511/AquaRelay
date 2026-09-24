@@ -35,6 +35,7 @@ import { Investigation } from "./investigation";
 import { Report } from "./report";
 import { Reviewer } from "./reviewer";
 import { MissionCard } from "./mission-card";
+import { FieldScene, SignalOrbit } from "./field-visuals";
 
 export function Workspace({ path }: { path: string[] }) {
   const query = useSearchParams();
@@ -110,7 +111,7 @@ function WorkspaceContent({ path }: { path: string[] }) {
     <>
       <Header active={page} demo={demo} onMode={changeMode} />
       <DemoBanner demo={demo} onMode={changeMode} />
-      <main id="main" className="workspace">
+      <main id="main" className={`workspace workspace-${page}`}>
         {!known ? (
           <Empty title="This page couldn’t be found">
             <Link href="/explore">Return to the explorer</Link>
@@ -155,7 +156,7 @@ function WorkspaceContent({ path }: { path: string[] }) {
           page === "admin" ? <AdminPage /> : <AccountPage />
         )}
       </main>
-      <Footer />
+      <Footer demo={demo} />
     </>
   );
 }
@@ -168,8 +169,12 @@ function Explorer({
   demo: boolean;
 }) {
   const router = useRouter();
+  const query = useSearchParams();
   const [now] = useState(() => Date.now());
-  const [category, setCategory] = useState(""),
+  const [category, setCategory] = useState(() => {
+      const requested = query.get("category");
+      return incidentCategories.find((item) => item === requested) ?? "";
+    }),
     [status, setStatus] = useState(""),
     [time, setTime] = useState(""),
     [distance, setDistance] = useState("");
@@ -255,8 +260,8 @@ function Explorer({
     <>
       <div className="explorer-top">
         <div>
-          <div className="eyebrow">FOLLOW THE EVIDENCE.</div>
-          <h1>Every place has a story.</h1>
+          <div className="eyebrow"><span className="dot" /> THE COMMUNITY FIELD ATLAS</div>
+          <h1>A closer look at <em>our world.</em></h1>
           <p>
             Explore observations, understand the evidence, find a useful next
             step.
@@ -567,11 +572,12 @@ function Missions({ demo }: { demo: boolean }) {
     is_demo: demo,
   }));
   return (
-    <div className="content-page">
-      <div className="page-heading">
-        <div className="eyebrow">SMALL TASKS. USEFUL EVIDENCE.</div>
-        <h1>Help answer the next question.</h1>
-        <p>Each mission answers a specific question in an environmental investigation. A report opens an investigation; a reviewer or evidence assessment identifies the follow-up task. Follow its history, then decide whether you can help safely.</p>
+    <div className="content-page missions-page">
+      <div className="page-heading illustrated-heading">
+        <div className="eyebrow">THE NEXT SMALL ACT / VERIFICATION MISSIONS</div>
+        <h1>A fresh perspective.<br /><em>A clearer picture.</em></h1>
+        <p>A clearer photo. A safe return visit. A useful comparison. Each mission asks you to help answer one specific question in an investigation.</p>
+        <div className="workspace-heading-art"><FieldScene habitat="land" /></div>
       </div>
       {!demo && <h2 className="nearby-missions-title">Find missions near your device {searched ? `(${filtered.length})` : ""}</h2>}
       <div className="mission-toolbar">
@@ -709,7 +715,7 @@ function Impact({ demo }: { demo: boolean }) {
   }, [demo, revision]);
   return (
     <div className="content-page impact-page">
-      <div className="page-heading">
+      <div className="page-heading illustrated-heading">
         <div className="eyebrow">
           {demo ? "MAYA’S DEMO IMPACT" : "YOUR CONTRIBUTIONS"}
         </div>
@@ -719,6 +725,7 @@ function Impact({ demo }: { demo: boolean }) {
           <em>Because you were there.</em>
         </h1>
         <p>The value is in what your evidence helps people understand.</p>
+        <div className="workspace-heading-art impact-orbit"><SignalOrbit /></div>
       </div>
       {error ? (
         <ErrorState
@@ -748,6 +755,11 @@ function Impact({ demo }: { demo: boolean }) {
               </p>
             </div>
           </div>
+          {!demo && <div className="impact-metrics" aria-label="Your contribution summary">
+            <div><span>Observations shared</span><strong>{contributions.length.toString().padStart(2, "0")}</strong><Icon name="eye" size={23} /></div>
+            <div><span>Mission responses</span><strong>{contributions.filter((item) => item.mission_id).length.toString().padStart(2, "0")}</strong><Icon name="camera" size={23} /></div>
+            <div><span>Investigations contributed to</span><strong>{new Set(contributions.map((item) => item.incident_id)).size.toString().padStart(2, "0")}</strong><Icon name="leaf" size={23} /></div>
+          </div>}
           <div className="impact-columns">
             <section>
               <h2>Your evidence in action</h2>
@@ -793,7 +805,7 @@ function Impact({ demo }: { demo: boolean }) {
                       event.points > 0 && event.observation_id === contribution.id &&
                       !events.some((reversal) => reversal.reverses_event_id === event.id));
                     const status = contributionStatus(contribution, recognised);
-                    return <article className="card card-body" key={contribution.id}>
+                    return <article className="contribution-entry card card-body" key={contribution.id}>
                       <div className="eyebrow">{contribution.mission_id ? "MISSION RESPONSE" : "ORIGINAL REPORT"}</div>
                       <h3>{humanize(contribution.category).replace(/^./, (letter) => letter.toUpperCase())} observation</h3>
                       <p>{dateLabel(contribution.submitted_at)} · {status}</p>

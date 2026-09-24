@@ -76,7 +76,13 @@ function makeShader(gl: WebGLRenderingContext, type: number, source: string) {
   return null;
 }
 
-export function HeroGlobe() {
+export function HeroGlobe({ paused = false }: { paused?: boolean }) {
+  const pausedRef = useRef(paused);
+  const restartRef = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    pausedRef.current = paused;
+    restartRef.current?.();
+  }, [paused]);
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -157,14 +163,10 @@ export function HeroGlobe() {
       gl.viewport(0, 0, pixelWidth, pixelHeight);
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
-      const radius = width < 700
-        ? Math.min(width * 0.62, height * 0.29)
-        : width < 1050
-          ? Math.min(width * 0.23, height * 0.35)
-          : Math.min(width * 0.25, height * 0.43);
+      const radius = Math.min(width * 0.43, height * 0.41);
       gl.uniform2f(centerUniform,
-        (width < 700 ? width * 0.5 : width < 1050 ? width * 0.76 : width * 0.75) * ratio,
-        (width < 700 ? height * 0.23 : width < 1050 ? height * 0.51 : height * 0.49) * ratio);
+        width * 0.5 * ratio,
+        height * 0.5 * ratio);
       gl.uniform1f(radiusUniform, radius * ratio);
       gl.uniform1f(angleUniform, angle);
       gl.uniform1f(tiltUniform, tilt);
@@ -172,7 +174,7 @@ export function HeroGlobe() {
     };
 
     const tick = (time: number) => {
-      if (!visible || reducedMotion || disposed) return;
+      if (!visible || reducedMotion || pausedRef.current || disposed) return;
       if (time - lastFrame >= 32) {
         if (!dragging) angle += Math.min(time - lastFrame, 100) * 0.000035;
         lastFrame = time;
@@ -182,7 +184,7 @@ export function HeroGlobe() {
     };
     const restart = () => {
       cancelAnimationFrame(frame);
-      if (loaded && visible && !reducedMotion) {
+      if (loaded && visible && !reducedMotion && !pausedRef.current) {
         lastFrame = performance.now();
         frame = requestAnimationFrame(tick);
       } else {
@@ -193,6 +195,7 @@ export function HeroGlobe() {
       reducedMotion = motion.matches;
       restart();
     };
+    restartRef.current = restart;
     const onPointerDown = (event: PointerEvent) => {
       if (event.pointerType === "touch") return;
       dragging = true;
@@ -248,6 +251,7 @@ export function HeroGlobe() {
 
     return () => {
       disposed = true;
+      restartRef.current = null;
       cancelAnimationFrame(frame);
       image.onload = null;
       resizeObserver.disconnect();

@@ -108,11 +108,12 @@ export function Header({
         <button
           className="menu-toggle"
           aria-expanded={open}
+          aria-controls="primary-navigation"
           onClick={() => setOpen(!open)}
         >
           Menu {open ? "−" : "+"}
         </button>
-        <nav className={open ? "nav open" : "nav"} aria-label="Main navigation">
+        <nav id="primary-navigation" className={open ? "nav open" : "nav"} aria-label="Main navigation">
           {[
             ["explore", "Explore"],
             ["missions", "Verification missions"],
@@ -123,7 +124,7 @@ export function Header({
               aria-current={active === path ? "page" : undefined}
               href={`/${path}${demo ? "?mode=demo" : ""}`}
             >
-              {label}
+              <span className="nav-route-icon"><Icon name={path === "explore" ? "map" : path === "missions" ? "eye" : "leaf"} size={16} /></span>{label}
             </Link>
           ))}
           <Link
@@ -282,14 +283,13 @@ export function Loading() {
     </div>
   );
 }
-export function Footer() {
+export function Footer({ demo = false }: { demo?: boolean }) {
+  const suffix = demo ? "?mode=demo" : "";
   return (
-    <footer>
-      <Link className="brand" href="/">
-        <Icon /> AquaRelay
-      </Link>
-      <p>Small observations. Shared understanding.</p>
-      <span>For the places we share.</span>
+    <footer className="field-footer">
+      <div className="footer-top"><Link className="brand" href="/"><span className="brand-mark"><Icon /></span>AquaRelay</Link><p>A little attention.<br />A healthier shared world.</p><nav aria-label="Footer navigation"><Link href={`/explore${suffix}`}>Explore</Link><Link href={`/missions${suffix}`}>Verification missions</Link><Link href={`/impact${suffix}`}>Your impact</Link></nav></div>
+      <div className="footer-wordmark" aria-hidden="true">AquaRelay<span>↗</span></div>
+      <div className="footer-bottom"><span>FOR THE PLACES WE SHARE.</span><span>OBSERVE. VERIFY. UNDERSTAND.</span><a href="#main">Back to top ↑</a></div>
     </footer>
   );
 }
