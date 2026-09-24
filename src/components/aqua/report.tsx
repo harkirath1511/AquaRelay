@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { incidentCategories, type IncidentCategory } from "@/domain/model";
-import { post, uploadPhoto, type UploadProgress } from "./api";
-import { Icon, Safety } from "./ui";
-import { humanize } from "./data";
+import { api, post, uploadPhoto, type UploadProgress } from "./api";
+import { ErrorState, Icon, Loading, Safety } from "./ui";
+import { demoMissions, humanize } from "./data";
 import type { SubmissionResult } from "@/features/observations/contracts";
 
 const steps = [
@@ -23,6 +23,15 @@ const flags = [
   "rapidly_changing_water",
   "unsafe_access",
 ];
+interface MissionBrief {
+  id: string;
+  incident_id: string;
+  type: string;
+  category: IncidentCategory;
+  evidence_gap: string;
+  instructions: string;
+  safety_message: string;
+}
 export function Report({
   demo,
   missionId,
@@ -30,8 +39,23 @@ export function Report({
   demo: boolean;
   missionId?: string;
 }) {
-  const [step, setStep] = useState(0),
+  const firstStep = missionId ? 1 : 0;
+  const visibleSteps = missionId ? steps.slice(1) : steps;
+  const [step, setStep] = useState(firstStep),
     [category, setCategory] = useState<IncidentCategory>("other");
+  const demoMission = demo && missionId ? demoMissions.find((item) => item.id === missionId) : undefined;
+  const [liveMission, setLiveMission] = useState<MissionBrief | null>(null);
+  const [missionError, setMissionError] = useState<Error | null>(null);
+  const [missionRevision, setMissionRevision] = useState(0);
+  const mission: MissionBrief | null = demoMission ? {
+    id: demoMission.id,
+    incident_id: demoMission.incident_id ?? "demo-foam",
+    type: demoMission.type,
+    category: (demoMission.story?.category ?? "other") as IncidentCategory,
+    evidence_gap: demoMission.evidence_gap,
+    instructions: demoMission.instructions,
+    safety_message: demoMission.safety_message,
+  } : liveMission;
   const [description, setDescription] = useState("");
   const [visible, setVisible] = useState("yes"),
     [persists, setPersists] = useState("unknown");
@@ -57,6 +81,16 @@ export function Report({
   const uploadProgress = useRef<UploadProgress[]>([]);
   const persisted = useRef<SubmissionResult | null>(null);
   const capturedAt = useRef("");
+  useEffect(() => {
+    if (!missionId || demo) return;
+    let active = true;
+    api<{ mission: MissionBrief }>(`/api/missions/${missionId}`)
+      .then(({ mission: nextMission }) => {
+        if (active) setLiveMission(nextMission);
+      })
+      .catch((cause) => { if (active) setMissionError(cause as Error); });
+    return () => { active = false; };
+  }, [demo, missionId, missionRevision]);
   useEffect(
     () => () => {
       previews.forEach((preview) => URL.revokeObjectURL(preview));
@@ -64,7 +98,7 @@ export function Report({
     [previews],
   );
   useEffect(() => {
-    if (demo || step !== 4 || !latitude || !longitude) return;
+    if (demo || missionId || step !== 4 || !latitude || !longitude) return;
     let active = true;
     post<{ cases: typeof possibleCases }>("/api/incidents/matches", {
       category,
@@ -73,13 +107,15 @@ export function Report({
       if (active) { setPossibleCases(cases); setCaseCheckError(false); }
     }).catch(() => { if (active) setCaseCheckError(true); });
     return () => { active = false; };
-  }, [demo, step, latitude, longitude, category]);
+  }, [demo, missionId, step, latitude, longitude, category]);
   function next() {
     setError("");
     if (step === 1 && !description.trim())
       return setError(
         "Describe what you noticed so others can understand the observation.",
       );
+    if (step === 1 && mission?.type === "clearer_photo" && photos.length === 0)
+      return setError("This mission asks for a clearer photo. Add one from a safe viewpoint before continuing.");
     if (step === 2) {
       if (
         !observedAt ||
@@ -144,11 +180,13 @@ export function Report({
         setDone(true);
         return;
       }
+      if (missionId && !mission) throw new Error("The mission could not be loaded. Please reopen it from Verification missions.");
+      if (mission?.type === "clearer_photo" && photos.length === 0)
+        throw new Error("Add a clearer photo from a safe viewpoint before submitting this mission response.");
       if (!key.current) key.current = crypto.randomUUID();
       const body = {
-        category,
+        ...(!missionId ? { category, locationLabel: label } : {}),
         description: description.trim(),
-        locationLabel: label,
         observedAt: new Date(observedAt).toISOString(),
         location: {
           latitude: Number(latitude),
@@ -194,6 +232,16 @@ export function Report({
       setBusy(false);
     }
   }
+  if (missionId && !mission) return (
+    <div className="report-layout">
+      {missionError || (demo && !demoMission)
+        ? <ErrorState error={missionError ?? new Error("Demo mission not found")} retry={() => {
+          setMissionError(null);
+          setMissionRevision((revision) => revision + 1);
+        }} />
+        : <Loading />}
+    </div>
+  );
   if (done)
     return (
       <div className="success-page">
@@ -209,7 +257,9 @@ export function Report({
         <p>
           {demo
             ? "You’ve tried the observation journey. In live mode, your contribution becomes part of a traceable evidence record."
-            : "Your observation is now part of the evidence record. A report opens a question; it does not establish a cause."}
+            : missionId
+              ? "Your response was added to the existing investigation. A reviewer can use it to assess the mission's evidence gap."
+              : "Your observation is now part of the evidence record. A report opens a question; it does not establish a cause."}
         </p>
         <Link
           className="button"
@@ -226,24 +276,31 @@ export function Report({
           {missionId ? "CONTRIBUTE TO A MISSION" : "MAKE AN OBSERVATION"}
         </div>
         <h1>
-          A moment of attention.
-          <br />
-          <em>
-            A useful piece
-            <br />
-            of the picture.
-          </em>
+          {mission ? <>Help with this<br /><em>{humanize(mission.type)} mission.</em></> : <>
+            A moment of attention.<br /><em>A useful piece<br />of the picture.</em>
+          </>}
         </h1>
         <p>
-          You don’t need to know what caused it. Just tell us what you noticed.
+          {mission
+            ? "This adds evidence to an existing investigation. Follow the task below from a safe public place."
+            : "You don’t need to know what caused it. Just tell us what you noticed."}
         </p>
+        {mission && <div className="mission-form-brief">
+          <strong>Question to answer</strong>
+          <p>{mission.evidence_gap}</p>
+          <strong>What to do</strong>
+          <p>{mission.instructions}</p>
+          <strong>Safety</strong>
+          <p>{mission.safety_message}</p>
+          <Link href={`/investigations/${mission.incident_id}${demo ? "?mode=demo" : ""}`}>View the investigation →</Link>
+        </div>}
         <ol className="form-steps">
-          {steps.map((s, n) => (
+          {visibleSteps.map((s, n) => (
             <li
               key={s}
-              className={step === n ? "current" : step > n ? "complete" : ""}
+              className={step === n + firstStep ? "current" : step > n + firstStep ? "complete" : ""}
             >
-              <span>{step > n ? "✓" : n + 1}</span>
+              <span>{step > n + firstStep ? "✓" : n + 1}</span>
               {s}
             </li>
           ))}
@@ -258,46 +315,30 @@ export function Report({
       </aside>
       <section className="form-card card">
         <div className="form-progress">
-          <span style={{ width: `${(step + 1) * 20}%` }} />
+          <span style={{ width: `${((step - firstStep + 1) / visibleSteps.length) * 100}%` }} />
         </div>
         <div className="card-body">
           <div className="eyebrow">
-            STEP {step + 1} OF 5{demo ? " · DEMO" : ""}
+            STEP {step - firstStep + 1} OF {visibleSteps.length}{demo ? " · DEMO" : ""}
           </div>
           <h2 tabIndex={-1} ref={heading}>
             {steps[step]}
           </h2>
           {step === 0 && (
             <>
-              <p className="muted">
-                What caught your attention? Choose the closest match.
-              </p>
+              <p className="muted">What caught your attention? Choose the closest match.</p>
               <div className="category-grid">
                 {incidentCategories.map((c) => (
-                  <button
-                    key={c}
-                    className={category === c ? "selected" : ""}
-                    aria-pressed={category === c}
-                    onClick={() => setCategory(c)}
-                  >
-                    <Icon
-                      name={
-                        ["wildlife", "litter", "illegal_dumping", "vegetation_loss", "habitat_damage", "soil_contamination"].includes(c)
-                          ? "leaf"
-                          : ["foam", "discolouration", "flow", "erosion"].includes(c)
-                            ? "water"
-                            : "eye"
-                      }
-                    />
+                  <button key={c} className={category === c ? "selected" : ""}
+                    aria-pressed={category === c} onClick={() => setCategory(c)}>
+                    <Icon name={["wildlife", "litter", "illegal_dumping", "vegetation_loss", "habitat_damage", "soil_contamination"].includes(c)
+                      ? "leaf" : ["foam", "discolouration", "flow", "erosion"].includes(c) ? "water" : "eye"} />
                     {humanize(c)}
                     <span>{category === c ? "●" : "○"}</span>
                   </button>
                 ))}
               </div>
-              <p className="field-help">
-                This helps us group related observations and ask useful
-                follow-up questions.
-              </p>
+              <p className="field-help">This helps us group related observations and ask useful follow-up questions.</p>
             </>
           )}
           {step === 1 && (
@@ -310,7 +351,7 @@ export function Report({
                     : "Add photographs"}
                 </strong>
                 <span>
-                  Up to 3 JPEG, PNG or WebP images · 10 MB each · optional
+                  Up to 3 JPEG, PNG or WebP images · 10 MB each · {mission?.type === "clearer_photo" ? "at least one photo for this mission" : "optional"}
                 </span>
                 <input
                   type="file"
@@ -364,14 +405,14 @@ export function Report({
                 Location metadata is removed by the upload service.
               </p>
               <label>
-                What did you notice?
+                {mission ? "What did you observe for this mission?" : "What did you notice?"}
                 <textarea
                   required
                   maxLength={2000}
                   rows={4}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="For example: damaged trees beside the public path, visible from the entrance."
+                  placeholder={mission ? "Describe what you saw in relation to the task above. Say if the condition was absent or uncertain." : "For example: damaged trees beside the public path, visible from the entrance."}
                 />
               </label>
               <div className="two-fields">
@@ -403,8 +444,9 @@ export function Report({
           {step === 2 && (
             <>
               <p className="muted">
-                Place and time help connect your observation to the right
-                investigation.
+                {mission
+                  ? "Record when and where you actually observed the condition. The location helps check whether this response is near the mission target; it stays private."
+                  : "Place and time help connect your observation to the right investigation."}
               </p>
               {demo ? (
                 <div className="demo-location">
@@ -466,16 +508,14 @@ export function Report({
                   </p>
                 </>
               )}
-              <label>
-                Place name or general area (optional)
-                <input
-                  value={label}
-                  onChange={(e) => setLabel(e.target.value)}
-                  maxLength={200}
-                  placeholder="A park, street, waterway or general area"
-                />
-              </label>
-              <p className="field-help">Use a clear place name to help reviewers understand the setting. For water reports, a specific waterway name also helps avoid grouping unrelated observations.</p>
+              {!mission && <>
+                <label>
+                  Place name or general area (optional)
+                  <input value={label} onChange={(e) => setLabel(e.target.value)}
+                    maxLength={200} placeholder="A park, street, waterway or general area" />
+                </label>
+                <p className="field-help">Use a clear place name to help reviewers understand the setting. For water reports, a specific waterway name also helps avoid grouping unrelated observations.</p>
+              </>}
               <button
                 className="text-link current-time"
                 onClick={() => {
@@ -507,6 +547,7 @@ export function Report({
           {step === 3 && (
             <>
               <Safety />
+              {mission && <p className="mission-form-safety"><Icon name="shield" size={18} />{mission.safety_message}</p>}
               <h3>Did you notice any of these hazards?</h3>
               <p className="field-help">
                 Select any that apply. These warnings are reviewed separately
@@ -546,8 +587,9 @@ export function Report({
                 Check the facts before sharing. This observation does not establish a cause or a safety finding.
               </p>
               <dl className="review-summary">
+                {mission && <><dt>Mission</dt><dd>{humanize(mission.type)} · {mission.evidence_gap}</dd></>}
                 <dt>Observation</dt>
-                <dd>{humanize(category)}</dd>
+                <dd>{humanize(mission?.category ?? category)}</dd>
                 <dt>Description</dt>
                 <dd>{description}</dd>
                 <dt>Photos</dt>
@@ -556,11 +598,7 @@ export function Report({
                     "No photos attached"}
                 </dd>
                 <dt>Area</dt>
-                <dd>
-                  {demo
-                    ? "Millbrook · demo location"
-                    : label || "Private coordinates confirmed"}
-                </dd>
+                <dd>{demo ? "Millbrook · demo location" : mission ? "Private mission response location confirmed" : label || "Private coordinates confirmed"}</dd>
                 <dt>Observed</dt>
                 <dd>{new Date(observedAt).toLocaleString()}</dd>
                 <dt>Safety flags</dt>
@@ -569,14 +607,14 @@ export function Report({
                     "None reported; safety has not been assessed"}
                 </dd>
               </dl>
-              {!demo && possibleCases.length > 0 && (
+              {!demo && !mission && possibleCases.length > 0 && (
                 <div className="info-box" role="status">
                   <strong>Possible nearby investigations</strong>
                   <p>These may describe a different place or event. Check them before submitting; uncertain reports stay separate for reviewer assessment.</p>
                   <ul>{possibleCases.map((item) => <li key={item.id}><Link href={`/investigations/${item.id}`} target="_blank" rel="noopener noreferrer">{item.location_label || "Approximate area"} · {new Date(item.opened_at).toLocaleDateString()}</Link></li>)}</ul>
                 </div>
               )}
-              {!demo && caseCheckError && <p className="field-help" role="status">Nearby-case check is unavailable. Your report can still be saved separately.</p>}
+              {!demo && !mission && caseCheckError && <p className="field-help" role="status">Nearby-case check is unavailable. Your report can still be saved separately.</p>}
               {demo && (
                 <div className="info-box">
                   This is a practice submission. It will not create a live
@@ -599,7 +637,7 @@ export function Report({
           <div className="form-footer">
             <button
               className="button secondary"
-              disabled={step === 0 || busy || !!saved}
+              disabled={step === firstStep || busy || !!saved}
               onClick={() => {
                 setError("");
                 setStep(step - 1);
@@ -619,7 +657,7 @@ export function Report({
                     ? "Retry photo upload"
                     : demo
                       ? "Finish demo observation"
-                      : "Submit observation"}
+                      : mission ? "Submit mission response" : "Submit observation"}
                 <Icon name="check" />
               </button>
             )}

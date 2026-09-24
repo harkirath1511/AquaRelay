@@ -1660,6 +1660,12 @@ footer .brand {
   color: var(--muted);
   max-width: 300px;
 }
+.mission-form-brief { margin-top: 22px; padding: 19px; border: 1px solid #d5e4d5; border-radius: 10px; background: #f4f8f2; }
+.mission-form-brief strong { display: block; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #315b48; }
+.mission-form-brief p { margin: 5px 0 15px; font-size: 12px; line-height: 1.6; }
+.mission-form-brief a { font-size: 12px; font-weight: 700; color: var(--green); }
+.mission-form-safety { display: flex; align-items: flex-start; gap: 9px; padding: 12px; border-radius: 7px; background: #f7f0dd; color: #665126; font-size: 12px; line-height: 1.5; }
+.mission-form-safety svg { flex: none; }
 .form-steps {
   list-style: none;
   padding: 0;
