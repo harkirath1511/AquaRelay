@@ -2,20 +2,16 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { Header, Footer, Icon, Badge } from "./ui";
-import { naturePhoto, foamPhoto } from "./data";
+import { foamPhoto } from "./data";
+import { HeroGlobe } from "./hero-globe";
 
 export function Landing() {
   return (
     <>
       <Header />
       <main id="main">
-        <section className="hero">
-          <img
-            className="hero-photo"
-            src={naturePhoto}
-            alt="A winding river flowing through a green, forested landscape"
-          />
-          <div className="hero-shade" />
+        <section className="hero hero-globe-hero">
+          <HeroGlobe />
           <div className="hero-content">
             <div className="eyebrow light">
               <span className="dot" /> FOR THE WATER WE SHARE
@@ -52,9 +48,9 @@ export function Landing() {
           </div>
           <div className="hero-caption">
             <span>LOOK CLOSER. UNDERSTAND TOGETHER.</span>
-            <span>Water connects us all. ↙</span>
+            <span>DRAG TO EXPLORE THE GLOBE</span>
           </div>
-          <div className="hero-index">01 / THE BEGINNING</div>
+          <div className="hero-index">EVERY STREAM IS CONNECTED</div>
         </section>
         <section className="trust-strip">
           <span>

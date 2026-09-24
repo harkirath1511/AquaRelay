@@ -3411,3 +3411,182 @@ hr {
 .map-fit { position:absolute; z-index:401; right:14px; top:14px; background:white; border:1px solid var(--line); border-radius:5px; padding:8px 13px; }
 .explorer-map .map-detail { z-index:450; }.explorer-map .map-missions-link { z-index:401; top:100px; }
 @media(max-width:600px) { .live-map .map-legend { font-size:9px; max-width:90%; } .map-empty { left:12%; right:12%; } }
+
+/* Landing globe: the map is illustrative, while the explorer shows investigations. */
+.hero.hero-globe-hero {
+  min-height: 650px;
+  height: min(790px, calc(100svh - 86px));
+  max-height: none;
+  margin: 0;
+  border-radius: 0;
+  background: #071519;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+}
+.hero.hero-globe-hero::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 40% 46% at 50% 49%, #051619b3, transparent 88%),
+    linear-gradient(0deg, #071519 0%, transparent 24%, transparent 77%, #07151966 100%);
+}
+.hero-globe {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  background: radial-gradient(ellipse 62% 75% at 50% 48%, #183933 0%, #0b2227 48%, #071519 78%);
+}
+.hero-globe::before,
+.hero-globe::after {
+  content: "";
+  position: absolute;
+  width: min(94vw, 1100px);
+  height: min(58vw, 650px);
+  top: 50%;
+  left: 50%;
+  border: 1px solid #b6d6bd24;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(-19deg);
+  pointer-events: none;
+}
+.hero-globe::after {
+  width: min(99vw, 1160px);
+  height: min(45vw, 510px);
+  border-color: #b6d6bd14;
+  transform: translate(-50%, -50%) rotate(23deg);
+}
+.hero-globe-halo,
+.hero-globe-fallback,
+.hero-globe canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.hero-globe-halo {
+  background: radial-gradient(circle at 50% 50%, #81bd8e30 0%, #6ca9810d 34%, transparent 63%);
+  filter: blur(28px);
+}
+.hero-globe-fallback {
+  top: 50%;
+  left: 50%;
+  width: min(82vw, 1050px);
+  height: min(82vw, 1050px);
+  inset: auto;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: url("/images/globe-texture.webp") center / 314% 157% repeat-x;
+  box-shadow: inset -150px -90px 150px #020b12cc, inset 38px 38px 100px #b3e2ae33,
+    0 0 95px #9bdbad24;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}
+.hero-globe.is-ready .hero-globe-fallback {
+  opacity: 0;
+}
+.hero-globe canvas {
+  opacity: 0;
+  cursor: grab;
+  touch-action: pan-y;
+}
+.hero-globe.is-ready canvas {
+  opacity: 1;
+}
+.hero-globe.is-dragging canvas {
+  cursor: grabbing;
+}
+.hero.hero-globe-hero .hero-content {
+  z-index: 2;
+  width: min(100%, 1000px);
+  padding: 96px 24px 115px;
+  text-align: center;
+  pointer-events: none;
+}
+.hero.hero-globe-hero .eyebrow {
+  justify-content: center;
+  color: #d2e5d5;
+  margin-bottom: 24px;
+}
+.hero.hero-globe-hero h1 {
+  font-size: clamp(48px, 6vw, 82px);
+  line-height: 1.04;
+  letter-spacing: -0.055em;
+  font-weight: 600;
+  margin: 0 auto 23px;
+  text-shadow: 0 2px 24px #06151bb3;
+}
+.hero.hero-globe-hero h1 em {
+  color: #d0edbb;
+}
+.hero.hero-globe-hero .tagline {
+  margin-bottom: 14px;
+  color: #f2f8f0;
+  text-shadow: 0 1px 14px #06151b;
+}
+.hero.hero-globe-hero .hero-description {
+  color: #d5e3db;
+  margin-bottom: 26px;
+  text-shadow: 0 1px 12px #06151b;
+}
+.hero.hero-globe-hero .actions {
+  justify-content: center;
+  margin-bottom: 19px;
+}
+.hero.hero-globe-hero .button {
+  pointer-events: auto;
+}
+.hero.hero-globe-hero .button.translucent {
+  background: #081d25b8;
+  backdrop-filter: blur(8px);
+}
+.hero.hero-globe-hero .hero-note {
+  justify-content: center;
+  color: #d2e2d8;
+}
+.hero.hero-globe-hero .hero-caption,
+.hero.hero-globe-hero .hero-index {
+  z-index: 2;
+  color: #c6dbd1;
+}
+.hero.hero-globe-hero .hero-caption {
+  left: 5%;
+  right: 5%;
+  bottom: 30px;
+}
+
+@media (max-width: 700px) {
+  .hero.hero-globe-hero {
+    min-height: 680px;
+    height: auto;
+  }
+  .hero.hero-globe-hero .hero-content {
+    padding: 116px 20px 112px;
+  }
+  .hero.hero-globe-hero h1 {
+    font-size: clamp(40px, 11vw, 56px);
+    letter-spacing: -0.045em;
+  }
+  .hero.hero-globe-hero .tagline {
+    font-size: 15px;
+  }
+  .hero.hero-globe-hero .hero-description {
+    font-size: 11px;
+  }
+  .hero.hero-globe-hero .actions {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .hero.hero-globe-hero .hero-caption > span:last-child,
+  .hero.hero-globe-hero .hero-index {
+    display: none;
+  }
+  .hero-globe-fallback {
+    width: 130vw;
+    height: 130vw;
+  }
+}
