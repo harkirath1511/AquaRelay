@@ -491,10 +491,6 @@ function distanceKm(a: number[], b: number[]) {
 
 function Missions({ demo }: { demo: boolean }) {
   const [missions, setMissions] = useState<Mission[]>(demo ? demoMissions : []),
-    [ownMissions, setOwnMissions] = useState<Mission[]>([]),
-    [ownLoading, setOwnLoading] = useState(!demo),
-    [ownError, setOwnError] = useState<Error | null>(null),
-    [ownRevision, setOwnRevision] = useState(0),
     [error, setError] = useState<Error | null>(null),
     [loading, setLoading] = useState(false),
     [searched, setSearched] = useState(demo);
@@ -502,21 +498,6 @@ function Missions({ demo }: { demo: boolean }) {
     [selected, setSelected] = useState<string | null>(null),
     [filter, setFilter] = useState("all"),
     [radius, setRadius] = useState("5000");
-  useEffect(() => {
-    if (demo) return;
-    let active = true;
-    api<{ missions: Mission[] }>("/api/me/missions")
-      .then((data) => {
-        if (active) setOwnMissions(data.missions);
-      })
-      .catch((cause) => {
-        if (active) setOwnError(cause as Error);
-      })
-      .finally(() => {
-        if (active) setOwnLoading(false);
-      });
-    return () => { active = false; };
-  }, [demo, ownRevision]);
   async function find() {
     setLoading(true);
     setError(null);
@@ -592,23 +573,7 @@ function Missions({ demo }: { demo: boolean }) {
         <h1>Help answer the next question.</h1>
         <p>Each mission answers a specific question in an environmental investigation. A report opens an investigation; a reviewer or evidence assessment identifies the follow-up task. Follow its history, then decide whether you can help safely.</p>
       </div>
-      {!demo && (ownLoading || ownError || ownMissions.length > 0) && (
-        <section className="own-missions" aria-labelledby="own-missions-title">
-          <div className="eyebrow">YOUR INVESTIGATIONS</div>
-          <h2 id="own-missions-title">Missions linked to your reports</h2>
-          <p>{ownMissions.length ? `${ownMissions.length} open ${ownMissions.length === 1 ? "mission" : "missions"} connected to observations you reported.` : "Checking investigations you reported…"} These may be outside your current area. Only visit a site from a safe public place.</p>
-          {ownLoading ? <Loading /> : ownError ? <ErrorState error={ownError} retry={() => {
-            setOwnError(null);
-            setOwnLoading(true);
-            setOwnRevision((current) => current + 1);
-          }} /> : (
-            <div className="mission-grid">
-              {ownMissions.map((mission) => <MissionCard mission={mission} key={mission.id} />)}
-            </div>
-          )}
-        </section>
-      )}
-      {!demo && <h2 className="nearby-missions-title">Find other missions near your device {searched ? `(${filtered.length})` : ""}</h2>}
+      {!demo && <h2 className="nearby-missions-title">Find missions near your device {searched ? `(${filtered.length})` : ""}</h2>}
       <div className="mission-toolbar">
         <div className="view-toggle">
           <button

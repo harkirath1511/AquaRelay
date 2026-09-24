@@ -1207,17 +1207,9 @@ footer .brand {
 .page-heading > p {
   color: var(--muted);
 }
-.own-missions {
-  margin-bottom: 38px;
-}
-.own-missions > h2,
 .nearby-missions-title {
   font-size: 24px;
   margin: 8px 0 10px;
-}
-.own-missions > p {
-  color: var(--muted);
-  margin-bottom: 20px;
 }
 .mission-toolbar {
   display: flex;
