@@ -1,6 +1,5 @@
 # AquaRelay — End-to-End Project Plan
 
-**Track:** Track 3 — AI-Supported Assessment  
 **Tagline:** One person notices. The community verifies. Experts can act.
 
 ## Product summary
